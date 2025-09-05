@@ -475,17 +475,6 @@ def run_prediction_AKD(selected_rows):
     last_prob = flat_prob[-1] * 100
 
     
-    # Step 2: 檢查 input_data
-    input_data = selected_rows[target_columns].apply(pd.to_numeric, errors='coerce')
-    print("=== Input data tail ===")
-    print(input_data.tail(3))
-    print("Missing values per column:\n", input_data.isna().sum())
-    
-
-    
-    # Step 4: 檢查模型輸出
-    y_prob = model.predict(X_test).squeeze().flatten()
-    print("=== y_prob ===", y_prob)
     
     # 針對不同百分比劑量進行預測
     dose_adjustments = [100, 90, 80, 70]
