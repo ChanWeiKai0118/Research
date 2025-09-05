@@ -681,7 +681,7 @@ if mode == "Input mode":
         beta_lactam = st.checkbox("Beta-lactam")
         ppi = st.checkbox("PPI")
         contrast_media = st.checkbox("Contrast media")
-        others = st.checkbox("Others")
+        others = st.checkbox("Others(Allopurinol, aminoglycosides, vancomycin, antivirals, fluoroquinolone, colistin)")
 
     
     if st.button("Submit Chemo Data"):
