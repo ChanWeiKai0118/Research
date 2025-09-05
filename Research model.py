@@ -473,7 +473,8 @@ def run_prediction_AKD(selected_rows):
     valid_indices = sample_weight > 0
     flat_prob = y_prob[valid_indices]
     last_prob = flat_prob[-1] * 100
-
+    print(last_prob)
+    
     # 針對不同百分比劑量進行預測
     dose_adjustments = [100, 90, 80, 70]
     prediction_results = {}
