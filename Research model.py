@@ -209,7 +209,11 @@ def save_to_gsheet(data, sheet_name):
         row[46] = f'=IF(OR(AS{last_row}="",AV{last_row}=""),"",IF(AV{last_row}=0,0,AV{last_row}/DATEVALUE(INDEX(lab_data!$E:$E,MATCH(1,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E=MAX(FILTER(lab_data!$E:$E,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})*(lab_data!N:N<>""))))*(lab_data!N:N<>""),0))-XLOOKUP(AS{last_row},FILTER(lab_data!N:N,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})),FILTER(lab_data!$E:$E,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})),"Not found"))))'
         row[47] = f'=IF(AT{last_row}="", "", AT{last_row} - AS{last_row})'
 
-        
+        # nephrotoxins藥物使用
+
+
+
+
         
         # post SCr和eGFR查找
         row[48] = f'=IFNA(IF(MAX(FILTER(lab_data!H:H, (lab_data!A:A = B{last_row}) * (lab_data!E:E > F{last_row}) * (lab_data!E:E <= F{last_row} + 89)))=0, "", MAX(FILTER(lab_data!H:H, (lab_data!A:A = B{last_row}) * (lab_data!E:E > F{last_row}) * (lab_data!E:E <= F{last_row} + 89)))), "")'
@@ -666,7 +670,20 @@ if mode == "Input mode":
         cis_dose = st.number_input("Cisplatin Dose (mg)", min_value=0.0, format="%.1f")
         carb_dose = st.number_input("Carboplatin Dose (mg)", min_value=0.0, format="%.1f")
         dose_percentage = st.number_input("Dose percentage (%)", min_value=0, max_value=100)
-        
+    
+    with col3:
+        st.markdown("**Nephrotoxin Medications**")
+        acei_arb = st.checkbox("ACEI/ARB")
+        acetaminophen = st.checkbox("Acetaminophen")
+        diuretics = st.checkbox("Diuretics")
+        h2_blocker = st.checkbox("H2-blocker")
+        nsaids = st.checkbox("NSAIDs")
+        beta_lactam = st.checkbox("Beta-lactam")
+        ppi = st.checkbox("PPI")
+        contrast_media = st.checkbox("Contrast media")
+        others = st.checkbox("Others")
+
+    
     if st.button("Submit Chemo Data"):
         treatment_date_str = treatment_date.strftime("%Y/%m/%d")
         number = str(number).zfill(8)  # 強制補滿8位數
