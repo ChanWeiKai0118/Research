@@ -482,6 +482,7 @@ def run_prediction_AKD(selected_rows):
         if dose_type == 'Cisplatin':
             new_cis_dose = original_cis_dose / dose_percentage * percentage
             input_data_modified.loc[last_row_index, 'cis_dose'] = new_cis_dose
+            print(1)
             prev = input_data_modified.loc[last_row_index - 1, 'cis_cum_dose'] if last_row_index > 0 else 0
             input_data_modified.loc[last_row_index, 'cis_cum_dose'] = prev + new_cis_dose
             cis_cycle = input_data_modified.loc[last_row_index, 'cis_cycle']
