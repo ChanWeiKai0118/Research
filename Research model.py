@@ -219,7 +219,7 @@ def save_to_gsheet(data, sheet_name):
         row[54] = data[16]
         row[55] = data[17]
         row[56] = data[18]
-        row[57] = f'=SUM(AW{last_row}:BE{last_row})
+        row[57] = f'=SUM(AW{last_row}:BE{last_row})'
         
         # post SCr和eGFR查找
         row[58] = f'=IFNA(IF(MAX(FILTER(lab_data!H:H, (lab_data!A:A = B{last_row}) * (lab_data!E:E > F{last_row}) * (lab_data!E:E <= F{last_row} + 89)))=0, "", MAX(FILTER(lab_data!H:H, (lab_data!A:A = B{last_row}) * (lab_data!E:E > F{last_row}) * (lab_data!E:E <= F{last_row} + 89)))), "")'
