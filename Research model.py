@@ -153,7 +153,7 @@ def save_to_gsheet(data, sheet_name):
     
     if sheet_name == "chemo_data":
         sheet = client.open("web data").worksheet("chemo_data")
-        row = ["" for _ in range(66)]  
+        row = ["" for _ in range(67)]  
         row[1], row[3], row[2], row[4], row[5] = data[0], data[1], data[2], data[3], data[4]
     
         if data[7] != 0:
