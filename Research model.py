@@ -654,7 +654,7 @@ mode = st.radio("Select mode", options=["Input mode", "Check mode","Prediction m
 # 輸入模式
 if mode == "Input mode":
     st.subheader("🔮 Input Mode")
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
 
     with col1:
         number = st.text_input("Patient ID (chemotherapy data)", key="predict_id")
