@@ -405,14 +405,14 @@ elif mode == "Check data mode":
 # =======================
 def run_prediction_AKD(selected_rows):
     # AKD columns
-    # 加入'carb_dose','dose_percentage','cis_cycle'方便後續做劑量調整
+    # 加入'carb_dose','dose_percentage','cis_cycle','cis_cum_dose'方便後續做劑量調整
     target_columns = [
         'id_no', 'age', 'weight', 'number_of_nephrotoxins', 'treatment_duration', 
          'cis_dose','carb_dose', 'latest_hemoglobin', 'latest_egfr', 'baseline_hemoglobin', 
          'baseline_bun', 'baseline_bun/scr', 'baseline_crcl', 'baseline_sodium', 
          'baseline_potassium', 'carb_cum_dose', 'average_cis_cum_dose', 
          'hemoglobin_change', 'crcl_change', 'potassium_change', 'crcl_slope', 
-         'aki_history','dose_percentage','cis_cycle'
+         'aki_history','dose_percentage','cis_cycle','cis_cum_dose'
     ]
     cols_for_preprocessing = [
         'id_no', 'age', 'weight', 'number_of_nephrotoxins', 'treatment_duration', 
@@ -450,7 +450,7 @@ def run_prediction_AKD(selected_rows):
     # 儲存預測那筆資料的dose percentage
     dose_percentage = input_data.loc[last_row_index, 'dose_percentage']
     # 在傳入 preprocessing 前，移除 'carb_dose','dose_percentage','cis_cycle'
-    input_data_pred = input_data.drop(columns=['carb_dose','dose_percentage','cis_cycle'])
+    input_data_pred = input_data.drop(columns=['carb_dose','dose_percentage','cis_cycle','cis_cum_dose'])
 
     # preprocessing
     normalizer = get_scaler()
@@ -473,7 +473,7 @@ def run_prediction_AKD(selected_rows):
     valid_indices = sample_weight > 0
     flat_prob = y_prob[valid_indices]
     last_prob = flat_prob[-1] * 100
-    print(1)
+
     # 針對不同百分比劑量進行預測
     dose_adjustments = [100, 90, 80, 70]
     prediction_results = {}
@@ -482,7 +482,6 @@ def run_prediction_AKD(selected_rows):
         if dose_type == 'Cisplatin':
             new_cis_dose = original_cis_dose / dose_percentage * percentage
             input_data_modified.loc[last_row_index, 'cis_dose'] = new_cis_dose
-            
             prev = input_data_modified.loc[last_row_index - 1, 'cis_cum_dose'] if last_row_index > 0 else 0
             input_data_modified.loc[last_row_index, 'cis_cum_dose'] = prev + new_cis_dose
             cis_cycle = input_data_modified.loc[last_row_index, 'cis_cycle']
@@ -517,13 +516,13 @@ def run_prediction_AKD(selected_rows):
 # =======================
 def run_prediction_AKI(selected_rows):
     #AKI columns
-    # 加入'carb_dose','dose_percentage','cis_cycle'方便後續做劑量調整
+    # 加入'carb_dose','dose_percentage','cis_cycle','cis_cum_dose'方便後續做劑量調整
     target_columns = [
         'id_no', 'age', 'weight', 'number_of_nephrotoxins', 'treatment_duration', 'cis_dose', 'carb_dose',
         'latest_hemoglobin', 'latest_bun/scr', 'latest_egfr', 'baseline_hemoglobin',
         'baseline_bun/scr', 'baseline_crcl', 'cis_cum_dose', 'carb_cum_dose',
         'average_cis_cum_dose', 'bun_change', 'bun/scr_change', 'crcl_change',
-        'potassium_change', 'crcl_slope', 'aki_history','dose_percentage','cis_cycle'
+        'potassium_change', 'crcl_slope', 'aki_history','dose_percentage','cis_cycle','cis_cum_dose'
 
     ]
     cols_for_preprocessing = [
@@ -561,7 +560,7 @@ def run_prediction_AKI(selected_rows):
     # 儲存預測那筆資料的dose percentage
     dose_percentage = input_data.loc[last_row_index, 'dose_percentage']
     # 在傳入 preprocessing 前，移除 'carb_dose','dose_percentage','cis_cycle'
-    input_data_pred = input_data.drop(columns=['carb_dose','dose_percentage','cis_cycle'])
+    input_data_pred = input_data.drop(columns=['carb_dose','dose_percentage','cis_cycle','cis_cum_dose'])
 
     # Preprocess
     normalizer = get_aki_scaler()
