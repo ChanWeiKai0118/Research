@@ -473,7 +473,7 @@ def run_prediction_AKD(selected_rows):
     valid_indices = sample_weight > 0
     flat_prob = y_prob[valid_indices]
     last_prob = flat_prob[-1] * 100
-
+    print(1)
     # 針對不同百分比劑量進行預測
     dose_adjustments = [100, 90, 80, 70]
     prediction_results = {}
@@ -482,7 +482,7 @@ def run_prediction_AKD(selected_rows):
         if dose_type == 'Cisplatin':
             new_cis_dose = original_cis_dose / dose_percentage * percentage
             input_data_modified.loc[last_row_index, 'cis_dose'] = new_cis_dose
-            print(1)
+            
             prev = input_data_modified.loc[last_row_index - 1, 'cis_cum_dose'] if last_row_index > 0 else 0
             input_data_modified.loc[last_row_index, 'cis_cum_dose'] = prev + new_cis_dose
             cis_cycle = input_data_modified.loc[last_row_index, 'cis_cycle']
