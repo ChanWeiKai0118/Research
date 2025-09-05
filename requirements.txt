@@ -1,0 +1,12 @@
+streamlit
+joblib
+pandas
+numpy
+scikit-learn==1.5.2
+requests
+imblearn
+lightgbm
+qrcode
+gspread
+datetime
+tensorflow==2.18.0
