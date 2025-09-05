@@ -481,10 +481,7 @@ def run_prediction_AKD(selected_rows):
     print(input_data.tail(3))
     print("Missing values per column:\n", input_data.isna().sum())
     
-    # Step 3: 檢查 preprocessing 輸出
-    X_test, y_test = preprocessing(...)
-    print("=== X_test shape ===", X_test.shape)
-    print("NaN in X_test:", np.isnan(X_test).any())
+
     
     # Step 4: 檢查模型輸出
     y_prob = model.predict(X_test).squeeze().flatten()
