@@ -210,22 +210,27 @@ def save_to_gsheet(data, sheet_name):
         row[47] = f'=IF(AT{last_row}="", "", AT{last_row} - AS{last_row})'
 
         # nephrotoxins藥物使用
-
-
-
-
+        row[48] = data[10]
+        row[49] = data[11]
+        row[50] = data[12]
+        row[51] = data[13]
+        row[52] = data[14]
+        row[53] = data[15]
+        row[54] = data[16]
+        row[55] = data[17]
+        row[56] = data[18]
         
         # post SCr和eGFR查找
-        row[48] = f'=IFNA(IF(MAX(FILTER(lab_data!H:H, (lab_data!A:A = B{last_row}) * (lab_data!E:E > F{last_row}) * (lab_data!E:E <= F{last_row} + 89)))=0, "", MAX(FILTER(lab_data!H:H, (lab_data!A:A = B{last_row}) * (lab_data!E:E > F{last_row}) * (lab_data!E:E <= F{last_row} + 89)))), "")'
-        row[49] = f'=IF(AZ{last_row}="","",TO_DATE(XLOOKUP(AZ{last_row}, FILTER(lab_data!H:H, (lab_data!A:A = B{last_row}) * (lab_data!E:E > F{last_row}) * (lab_data!E:E <= F{last_row} + 89)), FILTER(lab_data!E:E, (lab_data!A:A = B{last_row}) * (lab_data!E:E > F{last_row}) * (lab_data!E:E <= F{last_row} + 89)), "Not found")))'
-        row[50] = f'=IF(AW{last_row}="", "", IF(D{last_row}=0, IF(AW{last_row}<=0.7, 141*((AW{last_row}/0.7)^-0.329)*0.993^E{last_row}*1.018, 141*((AW{last_row}/0.7)^-1.209)*0.993^E{last_row}*1.018), IF(AW{last_row}<=0.9, 141*((AW{last_row}/0.9)^-0.411)*0.993^E{last_row}, 141*((AW{last_row}/0.9)^-1.209)*0.993^E{last_row})))'
-        row[51] = f'=IFNA(IF(MAX(FILTER(lab_data!H:H, (lab_data!A:A = B{last_row}) * (lab_data!E:E > F{last_row}) * (lab_data!E:E <= F{last_row} + 14)))=0, "", MAX(FILTER(lab_data!H:H, (lab_data!A:A = B{last_row}) * (lab_data!E:E > F{last_row}) * (lab_data!E:E <= F{last_row} + 14)))), "")'
-        row[52] = f'=IF(AZ{last_row}="","",TO_DATE(XLOOKUP(AZ{last_row}, FILTER(lab_data!H:H, (lab_data!A:A = B{last_row}) * (lab_data!E:E > F{last_row}) * (lab_data!E:E <= F{last_row} + 14)), FILTER(lab_data!E:E, (lab_data!A:A = B{last_row}) * (lab_data!E:E > F{last_row}) * (lab_data!E:E <= F{last_row} + 14)), "Not found")))'
-        row[53] = f'=IF(AZ{last_row}="", "", IF(D{last_row}=0, IF(AZ{last_row}<=0.7, 141*((AZ{last_row}/0.7)^-0.329)*0.993^E{last_row}*1.018, 141*((AZ{last_row}/0.7)^-1.209)*0.993^E{last_row}*1.018), IF(AZ{last_row}<=0.9, 141*((AZ{last_row}/0.9)^-0.411)*0.993^E{last_row}, 141*((AZ{last_row}/0.9)^-1.209)*0.993^E{last_row})))'
+        row[57] = f'=IFNA(IF(MAX(FILTER(lab_data!H:H, (lab_data!A:A = B{last_row}) * (lab_data!E:E > F{last_row}) * (lab_data!E:E <= F{last_row} + 89)))=0, "", MAX(FILTER(lab_data!H:H, (lab_data!A:A = B{last_row}) * (lab_data!E:E > F{last_row}) * (lab_data!E:E <= F{last_row} + 89)))), "")'
+        row[58] = f'=IF(AZ{last_row}="","",TO_DATE(XLOOKUP(AZ{last_row}, FILTER(lab_data!H:H, (lab_data!A:A = B{last_row}) * (lab_data!E:E > F{last_row}) * (lab_data!E:E <= F{last_row} + 89)), FILTER(lab_data!E:E, (lab_data!A:A = B{last_row}) * (lab_data!E:E > F{last_row}) * (lab_data!E:E <= F{last_row} + 89)), "Not found")))'
+        row[59] = f'=IF(AW{last_row}="", "", IF(D{last_row}=0, IF(AW{last_row}<=0.7, 141*((AW{last_row}/0.7)^-0.329)*0.993^E{last_row}*1.018, 141*((AW{last_row}/0.7)^-1.209)*0.993^E{last_row}*1.018), IF(AW{last_row}<=0.9, 141*((AW{last_row}/0.9)^-0.411)*0.993^E{last_row}, 141*((AW{last_row}/0.9)^-1.209)*0.993^E{last_row})))'
+        row[60] = f'=IFNA(IF(MAX(FILTER(lab_data!H:H, (lab_data!A:A = B{last_row}) * (lab_data!E:E > F{last_row}) * (lab_data!E:E <= F{last_row} + 14)))=0, "", MAX(FILTER(lab_data!H:H, (lab_data!A:A = B{last_row}) * (lab_data!E:E > F{last_row}) * (lab_data!E:E <= F{last_row} + 14)))), "")'
+        row[61] = f'=IF(AZ{last_row}="","",TO_DATE(XLOOKUP(AZ{last_row}, FILTER(lab_data!H:H, (lab_data!A:A = B{last_row}) * (lab_data!E:E > F{last_row}) * (lab_data!E:E <= F{last_row} + 14)), FILTER(lab_data!E:E, (lab_data!A:A = B{last_row}) * (lab_data!E:E > F{last_row}) * (lab_data!E:E <= F{last_row} + 14)), "Not found")))'
+        row[62] = f'=IF(AZ{last_row}="", "", IF(D{last_row}=0, IF(AZ{last_row}<=0.7, 141*((AZ{last_row}/0.7)^-0.329)*0.993^E{last_row}*1.018, 141*((AZ{last_row}/0.7)^-1.209)*0.993^E{last_row}*1.018), IF(AZ{last_row}<=0.9, 141*((AZ{last_row}/0.9)^-0.411)*0.993^E{last_row}, 141*((AZ{last_row}/0.9)^-1.209)*0.993^E{last_row})))'
         
         # AKI, AKD判定
-        row[55] = f'=IF(AZ{last_row}="", 0, IF(D{last_row}=1,IF(R{last_row}>=1.3,IF(OR(AZ{last_row}/Q{last_row}>=1.5, AZ{last_row}/R{last_row}>=1.5), 1, 0),IF(OR(AZ{last_row}/Q{last_row}>=1.5, AZ{last_row}/R{last_row}>=1.5, AZ{last_row}/1.3>=1.5), 1, 0)),IF(R{last_row}>=1.1,IF(OR(AZ{last_row}/Q{last_row}>=1.5, AZ{last_row}/R{last_row}>=1.5), 1, 0),IF(OR(AZ{last_row}/Q{last_row}>=1.5, AZ{last_row}/R{last_row}>=1.5, AZ{last_row}/1.1>=1.5), 1, 0))))'
-        row[56] = f'=IF(AW{last_row}="", 0, IF(V{last_row}<60, IF(OR(AW{last_row}/R{last_row}>=1.5,AW{last_row}/Q{last_row}>=1.5, AY{last_row}/V{last_row}<0.65,AY{last_row}/U{last_row}<0.65, BD{last_row}=1), 1, 0), IF(OR(AW{last_row}/R{last_row}>=1.5,AW{last_row}/Q{last_row}>=1.5, AY{last_row}/V{last_row}<0.65,AY{last_row}/U{last_row}<0.65, BD{last_row}=1, AY{last_row}<60), 1, 0)))'
+        row[64] = f'=IF(AZ{last_row}="", 0, IF(D{last_row}=1,IF(R{last_row}>=1.3,IF(OR(AZ{last_row}/Q{last_row}>=1.5, AZ{last_row}/R{last_row}>=1.5), 1, 0),IF(OR(AZ{last_row}/Q{last_row}>=1.5, AZ{last_row}/R{last_row}>=1.5, AZ{last_row}/1.3>=1.5), 1, 0)),IF(R{last_row}>=1.1,IF(OR(AZ{last_row}/Q{last_row}>=1.5, AZ{last_row}/R{last_row}>=1.5), 1, 0),IF(OR(AZ{last_row}/Q{last_row}>=1.5, AZ{last_row}/R{last_row}>=1.5, AZ{last_row}/1.1>=1.5), 1, 0))))'
+        row[65] = f'=IF(AW{last_row}="", 0, IF(V{last_row}<60, IF(OR(AW{last_row}/R{last_row}>=1.5,AW{last_row}/Q{last_row}>=1.5, AY{last_row}/V{last_row}<0.65,AY{last_row}/U{last_row}<0.65, BD{last_row}=1), 1, 0), IF(OR(AW{last_row}/R{last_row}>=1.5,AW{last_row}/Q{last_row}>=1.5, AY{last_row}/V{last_row}<0.65,AY{last_row}/U{last_row}<0.65, BD{last_row}=1, AY{last_row}<60), 1, 0)))'
 
         
         # AKI_history判定
@@ -235,13 +240,13 @@ def save_to_gsheet(data, sheet_name):
         checkbox_checked = data[9]
         has_aki_history = False
         for r in reversed(all_rows[1:]):  # 從最新資料往回找
-            if r[1] == current_id and r[5] < current_date and r[55] == "1":  # 注意：從 Google Sheet 抓下來是字串
+            if r[1] == current_id and r[5] < current_date and r[64] == "1":  # 注意：從 Google Sheet 抓下來是字串
                 has_aki_history = True
                 break
         if data[9] or has_aki_history : 
-            row[54] = 1
+            row[63] = 1
         else :
-            row[54] = 0  # UI 有勾 or 過去有 AKI 就是 1
+            row[63] = 0  # UI 有勾 or 過去有 AKI 就是 1
         
         return row
 
@@ -681,7 +686,7 @@ if mode == "Input mode":
         beta_lactam = st.checkbox("Beta-lactam")
         ppi = st.checkbox("PPI")
         contrast_media = st.checkbox("Contrast media")
-        others = st.checkbox("Others(Allopurinol, aminoglycosides, vancomycin, antivirals, fluoroquinolone, colistin)")
+        others = st.checkbox("Others (Allopurinol, aminoglycosides, vancomycin, antivirals, fluoroquinolone, colistin)")
 
     
     if st.button("Submit Chemo Data"):
@@ -689,7 +694,8 @@ if mode == "Input mode":
         number = str(number).zfill(8)  # 強制補滿8位數
         chemo_data_list = [
             number, gender_value, weight, age, 
-            treatment_date_str, cycle_no, dose_percentage, cis_dose, carb_dose, aki_history 
+            treatment_date_str, cycle_no, dose_percentage, cis_dose, carb_dose, aki_history ,
+            acei_arb, acetaminophen, diuretics, h2_blocker, nsaids, beta_lactam, ppi, contrast_media, others
         ]
     
         # 回傳資料行、AKI 判定結果、病人 ID
@@ -701,7 +707,8 @@ if mode == "Input mode":
     
         st.success("✅ Data submitted successfully!")
         # 👉 顯示剛剛輸入的資料
-        chemo_df = pd.DataFrame([chemo_data_list], columns=['Number','Gender','Weight', 'Age','Date','Cycle','Dose percentage(%)','Cisplatin dose','Carboplatin dose','AKI history'])
+        chemo_df = pd.DataFrame([chemo_data_list], columns=['Number','Gender','Weight', 'Age','Date','Cycle','Dose percentage(%)','Cisplatin dose','Carboplatin dose','AKI history',
+                                                            'acei_arb','acetaminophen','diuretics','h2_blocker','nsaids','beta_lactam','ppi','contrast','other_nephrotoxin'])
         st.subheader("🧾 Submitted Data")
         st.dataframe(chemo_df)
         
