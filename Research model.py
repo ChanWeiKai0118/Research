@@ -210,15 +210,15 @@ def save_to_gsheet(data, sheet_name):
         row[47] = f'=IF(AT{last_row}="", "", AT{last_row} - AS{last_row})'
 
         # nephrotoxins藥物使用
-        row[48] = data[10]
-        row[49] = data[11]
-        row[50] = data[12]
-        row[51] = data[13]
-        row[52] = data[14]
-        row[53] = data[15]
-        row[54] = data[16]
-        row[55] = data[17]
-        row[56] = data[18]
+        row[48] = f'=IF(data[10] == True , 1 , 0)'
+        row[49] = f'=IF(data[11] == True , 1 , 0)'
+        row[50] = f'=IF(data[12] == True , 1 , 0)'
+        row[51] = f'=IF(data[13] == True , 1 , 0)'
+        row[52] = f'=IF(data[14] == True , 1 , 0)'
+        row[53] = f'=IF(data[15] == True , 1 , 0)'
+        row[54] = f'=IF(data[16] == True , 1 , 0)'
+        row[55] = f'=IF(data[17] == True , 1 , 0)'
+        row[56] = f'=IF(data[18] == True , 1 , 0)'
         row[57] = f'=SUM(AW{last_row}:BE{last_row})'
         
         # post SCr和eGFR查找
