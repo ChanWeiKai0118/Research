@@ -473,7 +473,6 @@ def run_prediction_AKD(selected_rows):
     valid_indices = sample_weight > 0
     flat_prob = y_prob[valid_indices]
     last_prob = flat_prob[-1] * 100
-    print(last_prob)
     
     # 針對不同百分比劑量進行預測
     dose_adjustments = [100, 90, 80, 70]
@@ -782,9 +781,9 @@ elif mode == "Prediction mode":
                     # Run AKD
                     st.markdown("## 🧮 AKD Prediction")
                     akd_prob, akd_results,dose_percentage = run_prediction_AKD(selected_rows)
-                    st.markdown(f"### Predicted AKD Risk: <span style='color:{get_akd_color(akd_prob)};'>{akd_prob:.2f}%</span> (dose at {dose_percentage}%)",unsafe_allow_html=True)
+                    st.markdown(f"### Predicted AKD Risk: <span style='color:{get_akd_color(akd_prob)};'>{akd_prob:.4f}%</span> (dose at {dose_percentage}%)",unsafe_allow_html=True)
                     for k, v in akd_results.items():
-                        st.info(f"{k} dose → Predicted AKD Risk: **{v:.2f}%**")
+                        st.info(f"{k} dose → Predicted AKD Risk: **{v:.4f}%**")
 
                     # Run AKI
                     st.markdown("## 🧮 AKI Prediction")
