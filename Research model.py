@@ -510,7 +510,7 @@ def run_prediction_AKD(selected_rows):
         flat_prob_dose = y_prob_dose[valid_indices]
         prediction_results[f'{percentage}%'] = flat_prob_dose[-1] * 100
 
-    return last_prob, prediction_results,dose_percentage, y_prob, flat_prob
+    return last_prob, prediction_results,dose_percentage, X_test, flat_prob
 
 
 # =======================
