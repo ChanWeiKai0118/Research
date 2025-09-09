@@ -774,6 +774,12 @@ elif mode == "Prediction mode":
                     st.warning("No exact match found for this date. Please check again.")
                 else:
                     target_index = selected_row.index[0]
+                    
+                    # 只保留相同 id_no 的 row
+                    id_no_value = selected_row.iloc[0]['id_no']
+                    df_patient = df_patient[df_patient['id_no'] == id_no_value]
+    
+                    # 取輸入日期當下 row 之前的最近 6 筆
                     selected_rows = df_patient.loc[:target_index].tail(6)
                     
                     # 顯示預測用資料
