@@ -48,9 +48,9 @@ def get_scaler():
 def get_imputer():
     url = "https://raw.githubusercontent.com/ChanWeiKai0118/Research/main/MICE-AKI.pkl"
     response = requests.get(url)
-    with open("MICE-AKI.pkl", "wb") as scaler_file:
-        scaler_file.write(response.content)
-    return joblib.load("Scaler-AKD.pkl")
+    with open("MICE-AKI.pkl", "wb") as imputer_file:
+        imputer_file.write(response.content)
+    return joblib.load("MICE-AKI.pkl")
 
 # Load the AKI model
 @st.cache_resource
