@@ -10,3 +10,4 @@ qrcode
 gspread
 datetime
 tensorflow==2.18.0
+xgboost
