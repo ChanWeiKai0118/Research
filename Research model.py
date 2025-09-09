@@ -801,7 +801,9 @@ elif mode == "Prediction mode":
                         st.info(f"{k} dose → Predicted AKI Risk: **{v:.2f}%**")
 
             except Exception as e:
-                st.error(f"Error processing your request: {e}")
+                import traceback
+                st.error(f"Error processing your request: {str(e)}")
+                st.text(traceback.format_exc())
 
 
 
