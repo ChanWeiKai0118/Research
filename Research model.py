@@ -47,11 +47,11 @@ def get_scaler():
 # Load the AKD imputation
 @st.cache_resource
 def get_imputer():
-    url = "https://raw.githubusercontent.com/ChanWeiKai0118/Research/main/MICE-AKI.pkl"
+    url = "https://raw.githubusercontent.com/ChanWeiKai0118/Research/main/MICE-AKD.pkl"
     response = requests.get(url)
-    with open("MICE-AKI.pkl", "wb") as imputer_file:
+    with open("MICE-AKD.pkl", "wb") as imputer_file:
         imputer_file.write(response.content)
-    return joblib.load("MICE-AKI.pkl")
+    return joblib.load("MICE-AKD.pkl")
 
 # Load the AKI model
 @st.cache_resource
@@ -75,11 +75,11 @@ def get_aki_scaler():
 # Load the AKI imputation
 @st.cache_resource
 def get_aki_imputer():
-    aki_url = "https://raw.githubusercontent.com/ChanWeiKai0118/Research/main/MICE-AKD.pkl"
+    aki_url = "https://raw.githubusercontent.com/ChanWeiKai0118/Research/main/MICE-AKI.pkl"
     aki_response = requests.get(aki_url)
-    with open("MICE-AKD.pkl", "wb") as aki_file:
+    with open("MICE-AKI.pkl", "wb") as aki_file:
         aki_file.write(aki_response.content)
-    return joblib.load("MICE-AKD.pkl")
+    return joblib.load("MICE-AKI.pkl")
 
 def post_sequential_padding( # (for return_sequences True)
         data, groupby_col, selected_features, outcome, maxlen
