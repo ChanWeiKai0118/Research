@@ -510,7 +510,7 @@ def run_prediction_AKD(selected_rows):
         flat_prob = y_prob[valid_indices]
         prediction_results[f'{percentage}%'] = flat_prob[-1] * 100
 
-    return last_prob, prediction_results,dose_percentage
+    return last_prob, prediction_results,dose_percentage, input_data_pred, flat_prob
 
 
 # =======================
@@ -788,8 +788,9 @@ elif mode == "Prediction mode":
 
                     # Run AKD
                     st.markdown("## 🧮 AKD Prediction")
-                    akd_prob, akd_results,dose_percentage = run_prediction_AKD(selected_rows)
-                    st.markdown(akd_prob)
+                    akd_prob, akd_results,dose_percentage,input_data_pred ,flat_prob= run_prediction_AKD(selected_rows)
+                    st.markdown(input_data_pred)
+                    st.markdown(flat_prob)
                     st.markdown(f"### Predicted AKD Risk: <span style='color:{get_akd_color(akd_prob)};'>{akd_prob:.4f}%</span> (dose at {dose_percentage}%)",unsafe_allow_html=True)
                     for k, v in akd_results.items():
                         st.info(f"{k} dose → Predicted AKD Risk: **{v:.4f}%**")
