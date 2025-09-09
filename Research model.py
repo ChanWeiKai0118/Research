@@ -1,5 +1,6 @@
 import json
 import os
+import gdown
 import streamlit as st
 from google.oauth2.service_account import Credentials
 import gspread
@@ -57,20 +58,13 @@ def get_imputer():
 # Load the AKI model
 @st.cache_resource
 def get_aki_model():
-    # Google Drive 檔案 ID
     FILE_ID = "1mVsJO_fCwg6O218be3dP7GXBldMH8Uya"
-    url = f"https://drive.google.com/uc?export=download&id={FILE_ID}"
-
-    # 模型檔案本地路徑
     model_path = "AKI-LSTM.keras"
 
-    # 如果本地不存在就下載
     if not os.path.exists(model_path):
-        r = requests.get(url)
-        with open(model_path, "wb") as f:
-            f.write(r.content)
+        url = f"https://drive.google.com/uc?id={FILE_ID}"
+        gdown.download(url, model_path, quiet=False)
 
-    # 載入模型
     model = load_model(model_path, compile=False)
     return model
 
