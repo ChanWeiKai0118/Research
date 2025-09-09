@@ -56,11 +56,21 @@ def get_imputer():
 # Load the AKI model
 @st.cache_resource
 def get_aki_model():
-    url = "https://raw.githubusercontent.com/ChanWeiKai0118/Research/main/AKI-LSTM.zip"
-    response = requests.get(url)
-    z = zipfile.ZipFile(io.BytesIO(response.content))
-    z.extractall(".")
-    model = load_model("AKI-LSTM.keras", compile=False)
+    # Google Drive 檔案 ID
+    FILE_ID = "1mVsJO_fCwg6O218be3dP7GXBldMH8Uya"
+    url = f"https://drive.google.com/uc?export=download&id={FILE_ID}"
+
+    # 模型檔案本地路徑
+    model_path = "AKI-LSTM.keras"
+
+    # 如果本地不存在就下載
+    if not os.path.exists(model_path):
+        r = requests.get(url)
+        with open(model_path, "wb") as f:
+            f.write(r.content)
+
+    # 載入模型
+    model = load_model(model_path, compile=False)
     return model
 
 # Load the AKI scaler
