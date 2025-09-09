@@ -519,7 +519,7 @@ def run_prediction_AKD(selected_rows):
 # =======================
 def run_prediction_AKI(selected_rows):
     #AKI columns
-    # 加入'carb_dose','dose_percentage','cis_cycle','cis_cum_dose'方便後續做劑量調整
+    # 加入'carb_dose','dose_percentage','cis_cycle'方便後續做劑量調整
     target_columns = [
         'id_no', 'age', 'weight', 'number_of_nephrotoxins', 'treatment_duration', 'cis_dose', 'carb_dose',
         'latest_hemoglobin', 'latest_bun/scr', 'latest_egfr', 'baseline_hemoglobin',
