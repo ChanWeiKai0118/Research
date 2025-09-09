@@ -66,7 +66,7 @@ def get_aki_model():
 # Load the AKI scaler
 @st.cache_resource
 def get_aki_scaler():
-    aki_scaler_url = "https://raw.githubusercontent.com/ChanWeiKai0118/Research/main/Scaker-AKI.pkl"
+    aki_scaler_url = "https://raw.githubusercontent.com/ChanWeiKai0118/Research/main/Scaler-AKI.pkl"
     aki_scaler_response = requests.get(aki_scaler_url)
     with open("Scaker-AKI.pkl", "wb") as aki_scaler_file:
         aki_scaler_file.write(aki_scaler_response.content)
