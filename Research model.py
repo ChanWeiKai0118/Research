@@ -14,6 +14,7 @@ import sklearn
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.metrics import AUC
 from keras.models import load_model
+from xgboost import XGBClassifier
 
 import tensorflow as tf
 
