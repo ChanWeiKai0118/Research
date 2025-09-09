@@ -495,7 +495,7 @@ def run_prediction_AKD(selected_rows):
             input_data_modified.loc[last_row_index, 'carb_cum_dose'] = prev + new_carb_dose
 
         input_data_modified_pred = input_data_modified.drop(columns=['carb_dose','dose_percentage','cis_cycle','cis_cum_dose'])
-        X_test, y_test = preprocessing(
+        X_test_dose, y_test_dose = preprocessing(
             data=input_data_modified_pred,
             scaler=normalizer,
             imputer=miceforest,
@@ -505,12 +505,12 @@ def run_prediction_AKD(selected_rows):
             outcome='akd',
             maxlen=6
         )
-        y_prob = model.predict(X_test).squeeze().flatten()
-        valid_indices = (y_test != -1).astype(bool).flatten()
-        flat_prob = y_prob[valid_indices]
-        prediction_results[f'{percentage}%'] = flat_prob[-1] * 100
+        y_prob_dose = model.predict(X_test_dose).squeeze().flatten()
+        valid_indices = (y_test_dose != -1).astype(bool).flatten()
+        flat_prob_dose = y_prob_dose[valid_indices]
+        prediction_results[f'{percentage}%'] = flat_prob_dose[-1] * 100
 
-    return last_prob, prediction_results,dose_percentage, input_data_pred, X_test
+    return last_prob, prediction_results,dose_percentage, y_prob, flat_prob
 
 
 # =======================
@@ -605,7 +605,7 @@ def run_prediction_AKI(selected_rows):
             input_data_modified.loc[last_row_index, 'carb_cum_dose'] = prev + new_carb_dose
 
         input_data_modified_pred = input_data_modified.drop(columns=['carb_dose','dose_percentage','cis_cycle','cis_cum_dose'])
-        X_test, y_test = preprocessing(
+        X_test_dose, y_test_dose = preprocessing(
             data=input_data_modified_pred,
             scaler=normalizer,
             imputer=miceforest,
@@ -615,10 +615,10 @@ def run_prediction_AKI(selected_rows):
             outcome='aki',
             maxlen=6
         )
-        y_prob = model.predict(X_test).squeeze().flatten()
-        valid_indices = (y_test != -1).astype(bool).flatten()
-        flat_prob = y_prob[valid_indices]
-        prediction_results[f'{percentage}%'] = flat_prob[-1] * 100
+        y_prob_dose = model.predict(X_test_dose).squeeze().flatten()
+        valid_indices = (y_test_dose != -1).astype(bool).flatten()
+        flat_prob_dose = y_prob_dose[valid_indices]
+        prediction_results[f'{percentage}%'] = flat_prob_dose[-1] * 100
 
     return last_prob, prediction_results, dose_percentage
 
@@ -789,7 +789,7 @@ elif mode == "Prediction mode":
                     # Run AKD
                     st.markdown("## 🧮 AKD Prediction")
                     akd_prob, akd_results,dose_percentage,input_data_pred ,flat_prob= run_prediction_AKD(selected_rows)
-                    st.dataframe(input_data_pred)
+                    st.markdown(input_data_pred)
                     st.markdown(flat_prob)
                     st.markdown(f"### Predicted AKD Risk: <span style='color:{get_akd_color(akd_prob)};'>{akd_prob:.4f}%</span> (dose at {dose_percentage}%)",unsafe_allow_html=True)
                     for k, v in akd_results.items():
