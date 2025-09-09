@@ -58,13 +58,26 @@ def get_imputer():
 # Load the AKI model
 @st.cache_resource
 def get_aki_model():
-    FILE_ID = "1mVsJO_fCwg6O218be3dP7GXBldMH8Uya"
-    model_path = "AKI-LSTM.keras"
+    FILE_ID = "1Y7wo3oueuzw9X-ChrbpHScLnfHIkFVJp"
+    zip_path = "AKI_model.zip"
+    extract_folder = "AKI_model"
 
-    if not os.path.exists(model_path):
+    # 下載 ZIP
+    if not os.path.exists(zip_path):
         url = f"https://drive.google.com/uc?id={FILE_ID}"
-        gdown.download(url, model_path, quiet=False)
+        gdown.download(url, zip_path, quiet=False)
 
+    # 解壓縮
+    if not os.path.exists(extract_folder):
+        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+            zip_ref.extractall(extract_folder)
+
+    # 找到 .keras 檔案
+    keras_files = [f for f in os.listdir(extract_folder) if f.endswith(".keras")]
+    if len(keras_files) == 0:
+        raise FileNotFoundError("Cannot find .keras file in the ZIP.")
+
+    model_path = os.path.join(extract_folder, keras_files[0])
     model = load_model(model_path, compile=False)
     return model
 
