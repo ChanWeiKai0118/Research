@@ -494,7 +494,7 @@ def run_prediction_AKD(selected_rows):
             prev = input_data_modified.loc[last_row_index - 1, 'carb_cum_dose'] if last_row_index > 0 else 0
             input_data_modified.loc[last_row_index, 'carb_cum_dose'] = prev + new_carb_dose
 
-        input_data_modified_pred = input_data_modified.drop(columns=['carb_dose','dose_percentage','cis_cycle'])
+        input_data_modified_pred = input_data_modified.drop(columns=['carb_dose','dose_percentage','cis_cycle','cis_cum_dose'])
         X_test, y_test = preprocessing(
             data=input_data_modified_pred,
             scaler=normalizer,
@@ -604,7 +604,7 @@ def run_prediction_AKI(selected_rows):
             prev = input_data_modified.loc[last_row_index - 1, 'carb_cum_dose'] if last_row_index > 0 else 0
             input_data_modified.loc[last_row_index, 'carb_cum_dose'] = prev + new_carb_dose
 
-        input_data_modified_pred = input_data_modified.drop(columns=['carb_dose','dose_percentage','cis_cycle'])
+        input_data_modified_pred = input_data_modified.drop(columns=['carb_dose','dose_percentage','cis_cycle','cis_cum_dose'])
         X_test, y_test = preprocessing(
             data=input_data_modified_pred,
             scaler=normalizer,
