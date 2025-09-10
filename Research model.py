@@ -324,19 +324,19 @@ st.markdown(
         <p><strong>※ Model probability grading (for reference)</strong></p>
         <p><strong>AKD probability:</strong></p>
         <ul>
-            <li><span style="color:green;">Very Low:</span> 0% ~ 16.7%</li>
-            <li><span style="color:green;">Low:</span> 16.7% ~ 21.1%</li>
-            <li><span style="color:orange;">Average:</span> 21.1% ~ 27.5%</li>
-            <li><span style="color:red;">High:</span> 27.5% ~ 49.0%</li>
-            <li><span style="color:red;">Very High:</span> 49.0% ~ 100%</li>
+            <li><span style="color:green;">Very Low:</span> 0% ~ 8.1%</li>
+            <li><span style="color:green;">Low:</span> 8.1% ~ 12.0%</li>
+            <li><span style="color:orange;">Average:</span> 12.0% ~ 17.9%</li>
+            <li><span style="color:red;">High:</span> 17.9% ~ 32.8%</li>
+            <li><span style="color:red;">Very High:</span> 32.8% ~ 100%</li>
         </ul>
         <p><strong>AKI probability:</strong></p>
         <ul>
-            <li><span style="color:green;">Very Low:</span> 0% ~ 0.4%</li>
-            <li><span style="color:green;">Low:</span> 0.4% ~ 4.8%</li>
-            <li><span style="color:orange;">Average:</span> 4.8% ~ 13.3%</li>
-            <li><span style="color:red;">High:</span> 13.3% ~ 26.1%</li>
-            <li><span style="color:red;">Very High:</span> 26.1% ~ 100%</li>
+            <li><span style="color:green;">Very Low:</span> 0% ~ 0.2%</li>
+            <li><span style="color:green;">Low:</span> 0.2% ~ 0.3%</li>
+            <li><span style="color:orange;">Average:</span> 0.3% ~ 10.0%</li>
+            <li><span style="color:red;">High:</span> 10.0% ~ 21.8%</li>
+            <li><span style="color:red;">Very High:</span> 21.8% ~ 100%</li>
         </ul>
     </div>
     """,
@@ -641,25 +641,25 @@ def run_prediction_AKI(selected_rows):
     return last_prob, prediction_results, dose_percentage
 
 def get_aki_color(prob):
-    if prob <= 0.4:
+    if prob <= 0.2:
         return "green"   # Very Low
-    elif prob <= 4.8:
+    elif prob <= 0.3:
         return "green"   # Low
-    elif prob <= 13.3:
+    elif prob <= 10.0:
         return "orange"  # Average
-    elif prob <= 26.1:
+    elif prob <= 21.8:
         return "red"     # High
     else:
         return "red"     # Very High
 
 def get_akd_color(prob):
-    if prob <= 16.7:
+    if prob <= 8.1:
         return "green"   # Very Low
-    elif prob <= 21.1:
+    elif prob <= 12.0:
         return "green"   # Low
-    elif prob <= 27.5:
+    elif prob <= 17.9:
         return "orange"  # Average
-    elif prob <= 49.0:
+    elif prob <= 32.8:
         return "red"     # High
     else:
         return "red"     # Very High
