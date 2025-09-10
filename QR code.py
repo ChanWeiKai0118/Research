@@ -3,7 +3,7 @@ from io import BytesIO
 import streamlit as st
 from PIL import Image
 
-# 应用网址
+# ✅ 正確的應用網址
 app_url = "https://research-msgfuuqy6pzr3hqgghv5v8.streamlit.app/"
 
 # 生成二维码
@@ -16,6 +16,7 @@ qr = qrcode.QRCode(
 qr.add_data(app_url)
 qr.make(fit=True)
 
+# 轉成圖片
 img = qr.make_image(fill_color="black", back_color="white")
 buffer = BytesIO()
 img.save(buffer, format="PNG")
