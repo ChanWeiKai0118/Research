@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Dec  2 10:57:34 2024
-
-@author: kevin
-"""
-
 import qrcode
 from io import BytesIO
 import streamlit as st
