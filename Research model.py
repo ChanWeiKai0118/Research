@@ -635,28 +635,16 @@ def run_prediction_AKI(selected_rows):
     return last_prob, prediction_results, dose_percentage
 
 def get_aki_color(prob):
-    if prob <= 0.2:
-        return "green"   # Very Low
-    elif prob <= 0.3:
-        return "green"   # Low
-    elif prob <= 10.0:
-        return "orange"  # Average
-    elif prob <= 21.8:
-        return "red"     # High
+    if prob <= 0.42:
+        return "green"   # Possiable Non-AKI
     else:
-        return "red"     # Very High
+        return "red"     # Possiable AKI
 
 def get_akd_color(prob):
-    if prob <= 8.1:
-        return "green"   # Very Low
-    elif prob <= 12.0:
-        return "green"   # Low
-    elif prob <= 17.9:
-        return "orange"  # Average
-    elif prob <= 32.8:
-        return "red"     # High
+    if prob <= 0.13:
+        return "green"   # Possiable Non-AKD
     else:
-        return "red"     # Very High
+        return "red"     # Possiable AKD
 
 
 # === 第二個 Streamlit UI ===
