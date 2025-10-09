@@ -801,7 +801,7 @@ elif mode == "Prediction mode":
                     st.markdown("## 🧮 AKD Prediction")
                     akd_prob, akd_results,dose_percentage= run_prediction_AKD(selected_rows)
                     st.markdown(f"### Predicted AKD Risk: <span style='color:{get_akd_color(akd_prob)};'>{akd_prob:.4f}%</span> (dose at {dose_percentage}%)",unsafe_allow_html=True)
-                    st.markdown(f"<span style='color:{get_akd_color(akd_prob)}; font-weight:bold;'>{get_akd_status(akd_prob)}</span>",unsafe_allow_html=True)
+                    st.markdown(f"###<span style='color:{get_akd_color(akd_prob)}; font-weight:bold;'>{get_akd_status(akd_prob)}</span>",unsafe_allow_html=True)
                     for k, v in akd_results.items():
                         st.info(f"{k} dose → Predicted AKD Risk: **{v:.4f}%**")
 
@@ -809,7 +809,7 @@ elif mode == "Prediction mode":
                     st.markdown("## 🧮 AKI Prediction")
                     aki_prob, aki_results,dose_percentage = run_prediction_AKI(selected_rows)
                     st.markdown(f"### Predicted AKI Risk: <span style='color:{get_aki_color(aki_prob)};'>{aki_prob:.2f}%</span> (dose at {dose_percentage}%)",unsafe_allow_html=True)
-                    st.markdown(f"<span style='color:{get_aki_color(aki_prob)}; font-weight:bold;'>{get_aki_status(aki_prob)}</span>",unsafe_allow_html=True)
+                    st.markdown(f"###<span style='color:{get_aki_color(aki_prob)}; font-weight:bold;'>{get_aki_status(aki_prob)}</span>",unsafe_allow_html=True)
                     for k, v in aki_results.items():
                         st.info(f"{k} dose → Predicted AKI Risk: **{v:.2f}%**")
 
