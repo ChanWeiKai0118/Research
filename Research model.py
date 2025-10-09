@@ -321,22 +321,16 @@ st.markdown(
             <li>Baseline SCr : the latest SCr within 30 days before the first cycle</li>
             <li>Latest SCr : the latest SCr within 30 days before the current cycle</li>
         </ul>
-        <p><strong>※ Model probability grading (for reference)</strong></p>
+        <p><strong>※ Model probability classification (for reference)</strong></p>
         <p><strong>AKD probability:</strong></p>
         <ul>
-            <li><span style="color:green;">Very Low:</span> 0% ~ 8.1%</li>
-            <li><span style="color:green;">Low:</span> 8.1% ~ 12.0%</li>
-            <li><span style="color:orange;">Average:</span> 12.0% ~ 17.9%</li>
-            <li><span style="color:red;">High:</span> 17.9% ~ 32.8%</li>
-            <li><span style="color:red;">Very High:</span> 32.8% ~ 100%</li>
+            <li><span style="color:green;">Possiable Non-AKD:</span> 0% ~ 13%</li>
+            <li><span style="color:red;">Possiable AKD:</span> 13% ~ 100%</li>
         </ul>
         <p><strong>AKI probability:</strong></p>
         <ul>
-            <li><span style="color:green;">Very Low:</span> 0% ~ 0.2%</li>
-            <li><span style="color:green;">Low:</span> 0.2% ~ 0.3%</li>
-            <li><span style="color:orange;">Average:</span> 0.3% ~ 10.0%</li>
-            <li><span style="color:red;">High:</span> 10.0% ~ 21.8%</li>
-            <li><span style="color:red;">Very High:</span> 21.8% ~ 100%</li>
+            <li><span style="color:green;">Possiable Non-AKI:</span> 0% ~ 42%</li>
+            <li><span style="color:red;">Possiable AKI:</span> 42% ~ 100%</li>
         </ul>
     </div>
     """,
