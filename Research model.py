@@ -635,13 +635,13 @@ def run_prediction_AKI(selected_rows):
     return last_prob, prediction_results, dose_percentage
 
 def get_aki_color(prob):
-    if prob <= 0.42:
+    if prob <= 42:
         return "green"   # Possiable Non-AKI
     else:
         return "red"     # Possiable AKI
 
 def get_akd_color(prob):
-    if prob <= 0.13:
+    if prob <= 13:
         return "green"   # Possiable Non-AKD
     else:
         return "red"     # Possiable AKD
