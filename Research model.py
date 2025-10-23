@@ -37,6 +37,8 @@ def get_model():
     model = load_model("AKD-LSTM.keras", compile=False)
     return model
 
+model = get_aki_model()
+
 # Load the AKD scaler
 @st.cache_resource
 def get_scaler():
