@@ -99,6 +99,20 @@ def get_aki_imputer():
         aki_file.write(aki_response.content)
     return joblib.load("MICE-AKI.pkl")
 
+# Load SHAP AKD background data
+@st.cache_resource
+def get_akd_background_data():
+    bg_AKD = np.load('https://raw.githubusercontent.com/ChanWeiKai0118/Research/main/X_background_AKD.npz')
+    X_background_AKD = bg_AKD['X_background_AKD']
+    return X_background_AKD
+
+# Load SHAP AKI background data
+@st.cache_resource
+def get_akd_background_data():
+    bg_AKI = np.load('https://raw.githubusercontent.com/ChanWeiKai0118/Research/main/X_background_AKI.npz')
+    X_background_AKI = bg_AKI['X_background_AKI']
+    return X_background_AKI
+
 def post_sequential_padding( # (for return_sequences True)
         data, groupby_col, selected_features, outcome, maxlen
     ):
@@ -525,6 +539,46 @@ def run_prediction_AKD(selected_rows):
 
     return last_prob, prediction_results,dose_percentage
 
+# =======================
+# AKD SHAP Function
+# =======================
+# 背景資料
+X_background_AKD = get_akd_background_data()
+seq_len = 6  # 你的 LSTM 輸入長度
+
+# === predict_fn_AKD for SHAP ===
+def predict_fn_AKD (x_flat):
+    n = x_flat.shape[0]
+
+    if n < seq_len:
+        pad_size = seq_len - n
+        pad = -1 * np.ones((pad_size, x_flat.shape[1]))
+        x_flat = np.vstack([x_flat, pad])
+        n = seq_len
+    elif n % seq_len != 0:
+        n_full = (n // seq_len) * seq_len
+        remainder = n - n_full
+        x_main = x_flat[:n_full]
+        pad = -1 * np.ones((seq_len - remainder, x_flat.shape[1]))
+        x_flat = np.vstack([x_main, x_flat[n_full:], pad])
+        n = x_flat.shape[0]
+
+    x_seq = x_flat.reshape(n // seq_len, seq_len, x_flat.shape[1])
+    y_seq = model.predict(x_seq, verbose=0)
+    y_flat = y_seq.reshape(-1, 1)
+    padding_mask = np.any(x_flat == -1, axis=1)
+    y_flat_valid = y_flat[~padding_mask]
+    return y_flat_valid
+
+# === 建立 explainer (只初始化一次) ===
+@st.cache_resource
+def get_AKD_explainer():
+    return shap.KernelExplainer(predict_fn_AKD, X_background_AKD)
+
+AKD_explainer = get_AKD_explainer()
+
+
+
 
 # =======================
 # AKI Prediction Function
@@ -632,7 +686,50 @@ def run_prediction_AKI(selected_rows):
         flat_prob_dose = y_prob_dose[valid_indices]
         prediction_results[f'{percentage}%'] = flat_prob_dose[-1] * 100
 
+    feat_dim=20
+    X_test
+
     return last_prob, prediction_results, dose_percentage
+
+# =======================
+# AKI SHAP Function
+# =======================
+# 背景資料
+X_background_AKI = get_aki_background_data()
+seq_len = 6  # 你的 LSTM 輸入長度
+
+# === predict_fn_AKI for SHAP ===
+def predict_fn_AKI (x_flat):
+    n = x_flat.shape[0]
+
+    if n < seq_len:
+        pad_size = seq_len - n
+        pad = -1 * np.ones((pad_size, x_flat.shape[1]))
+        x_flat = np.vstack([x_flat, pad])
+        n = seq_len
+    elif n % seq_len != 0:
+        n_full = (n // seq_len) * seq_len
+        remainder = n - n_full
+        x_main = x_flat[:n_full]
+        pad = -1 * np.ones((seq_len - remainder, x_flat.shape[1]))
+        x_flat = np.vstack([x_main, x_flat[n_full:], pad])
+        n = x_flat.shape[0]
+
+    x_seq = x_flat.reshape(n // seq_len, seq_len, x_flat.shape[1])
+    y_seq = model.predict(x_seq, verbose=0)
+    y_flat = y_seq.reshape(-1, 1)
+    padding_mask = np.any(x_flat == -1, axis=1)
+    y_flat_valid = y_flat[~padding_mask]
+    return y_flat_valid
+
+# === 建立 explainer (只初始化一次) ===
+@st.cache_resource
+def get_AKI_explainer():
+    return shap.KernelExplainer(predict_fn_AKI, X_background_AKI)
+
+AKI_explainer = get_AKI_explainer()
+
+
 
 def get_aki_color(prob):
     if prob <= 42:
@@ -804,6 +901,9 @@ elif mode == "Prediction mode":
                     st.markdown(f"### <span style='color:{get_akd_color(akd_prob)}; font-weight:bold;'>{get_akd_status(akd_prob)}</span>",unsafe_allow_html=True)
                     for k, v in akd_results.items():
                         st.info(f"{k} dose → Predicted AKD Risk: **{v:.4f}%**")
+                    # === 計算 SHAP 值 ===
+                    X_patient = selected_rows.drop(columns=['非特徵欄位']).astype(float).to_numpy()
+                    shap_values = explainer.shap_values(X_patient, nsamples=100)
 
                     # Run AKI
                     st.markdown("## 🧮 AKI Prediction")
