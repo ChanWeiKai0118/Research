@@ -537,7 +537,21 @@ def run_prediction_AKD(selected_rows):
         flat_prob_dose = y_prob_dose[valid_indices]
         prediction_results[f'{percentage}%'] = flat_prob_dose[-1] * 100
 
-    return last_prob, prediction_results,dose_percentage
+
+    # == SHAP 準備病人資料==
+    feat_dim=20
+    X_test_flat_all = X_test.reshape(-1, feat_dim)              # 攤平成2維 shape = (batch_test*seq_len, feat_dim)
+    test_padding_mask = np.any(X_test_flat_all == -1, axis=1)      # padding masking
+    X_test_valid_rows = X_test_flat_all[~test_padding_mask]           # padding masking
+    # == 取得 explainer==
+    AKD_explainer = get_AKD_explainer()
+    # === 計算 SHAP 值 ===
+    shap_values = AKD_explainer.shap_values(X_test_valid_rows, nsamples=100)
+    squeeze_shap_values = shap_values.squeeze(-1)                 # SHAP value 3維轉2維
+    selected_shap_values = squeeze_shap_values [-1,:]              #取最後一筆
+
+    return last_prob, prediction_results, dose_percentage, selected_shap_values
+
 
 # =======================
 # AKD SHAP Function
@@ -686,10 +700,19 @@ def run_prediction_AKI(selected_rows):
         flat_prob_dose = y_prob_dose[valid_indices]
         prediction_results[f'{percentage}%'] = flat_prob_dose[-1] * 100
 
+    # == SHAP 準備病人資料==
     feat_dim=20
-    X_test
+    X_test_flat_all = X_test.reshape(-1, feat_dim)              # 攤平成2維 shape = (batch_test*seq_len, feat_dim)
+    test_padding_mask = np.any(X_test_flat_all == -1, axis=1)      # padding masking
+    X_test_valid_rows = X_test_flat_all[~test_padding_mask]           # padding masking
+    # == 取得 explainer==
+    AKI_explainer = get_AKI_explainer()
+    # === 計算 SHAP 值 ===
+    shap_values = AKI_explainer.shap_values(X_test_valid_rows, nsamples=100)
+    squeeze_shap_values = shap_values.squeeze(-1)                 # SHAP value 3維轉2維
+    selected_shap_values = squeeze_shap_values [-1,:]              #取最後一筆
 
-    return last_prob, prediction_results, dose_percentage
+    return last_prob, prediction_results, dose_percentage, selected_shap_values
 
 # =======================
 # AKI SHAP Function
@@ -727,7 +750,7 @@ def predict_fn_AKI (x_flat):
 def get_AKI_explainer():
     return shap.KernelExplainer(predict_fn_AKI, X_background_AKI)
 
-AKI_explainer = get_AKI_explainer()
+
 
 
 
@@ -896,19 +919,18 @@ elif mode == "Prediction mode":
 
                     # Run AKD
                     st.markdown("## 🧮 AKD Prediction")
-                    akd_prob, akd_results,dose_percentage= run_prediction_AKD(selected_rows)
-                    st.markdown(f"### Predicted AKD Risk: <br> <span style='color:{get_akd_color(akd_prob)};font-weight:bold;'>{akd_prob:.4f}%</span> (dose at {dose_percentage}%)",unsafe_allow_html=True)
+                    akd_prob, akd_results,dose_percentage_AKD, selected_shap_values_AKD= run_prediction_AKD(selected_rows)
+                    st.markdown(f"### Predicted AKD Risk: <br> <span style='color:{get_akd_color(akd_prob)};font-weight:bold;'>{akd_prob:.4f}%</span> (dose at {dose_percentage_AKD}%)",unsafe_allow_html=True)
+                    st.markdown(selected_shap_values_AKD)
                     st.markdown(f"### <span style='color:{get_akd_color(akd_prob)}; font-weight:bold;'>{get_akd_status(akd_prob)}</span>",unsafe_allow_html=True)
                     for k, v in akd_results.items():
                         st.info(f"{k} dose → Predicted AKD Risk: **{v:.4f}%**")
-                    # === 計算 SHAP 值 ===
-                    X_patient = selected_rows.drop(columns=['非特徵欄位']).astype(float).to_numpy()
-                    shap_values = explainer.shap_values(X_patient, nsamples=100)
+
 
                     # Run AKI
                     st.markdown("## 🧮 AKI Prediction")
-                    aki_prob, aki_results,dose_percentage = run_prediction_AKI(selected_rows)
-                    st.markdown(f"### Predicted AKI Risk: <br> <span style='color:{get_aki_color(aki_prob)}; font-weight:bold;'>{aki_prob:.2f}%</span> (dose at {dose_percentage}%)",unsafe_allow_html=True)
+                    aki_prob, aki_results,dose_percentage_AKI, selected_shap_values_AKI = run_prediction_AKI(selected_rows)
+                    st.markdown(f"### Predicted AKI Risk: <br> <span style='color:{get_aki_color(aki_prob)}; font-weight:bold;'>{aki_prob:.2f}%</span> (dose at {dose_percentage_AKI}%)",unsafe_allow_html=True)
                     st.markdown(f"### <span style='color:{get_aki_color(aki_prob)}; font-weight:bold;'>{get_aki_status(aki_prob)}</span>",unsafe_allow_html=True)
                     for k, v in aki_results.items():
                         st.info(f"{k} dose → Predicted AKI Risk: **{v:.2f}%**")
