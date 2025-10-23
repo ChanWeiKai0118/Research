@@ -110,7 +110,7 @@ def get_akd_background_data():
         
 # Load SHAP AKI background data
 @st.cache_resource
-def get_akd_background_data():
+def get_aki_background_data():
     url = "https://raw.githubusercontent.com/ChanWeiKai0118/Research/main/X_background_AKI.npz"
     response = requests.get(url)
     response.raise_for_status()
