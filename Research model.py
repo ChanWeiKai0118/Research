@@ -102,16 +102,20 @@ def get_aki_imputer():
 # Load SHAP AKD background data
 @st.cache_resource
 def get_akd_background_data():
-    bg_AKD = np.load('https://raw.githubusercontent.com/ChanWeiKai0118/Research/main/X_background_AKD.npz')
-    X_background_AKD = bg_AKD['X_background_AKD']
-    return X_background_AKD
-
+    url = "https://raw.githubusercontent.com/ChanWeiKai0118/Research/main/X_background_AKD.npz"
+    response = requests.get(url)
+    response.raise_for_status()
+    with np.load(io.BytesIO(response.content)) as data:
+        return data["X_background_AKD"]
+        
 # Load SHAP AKI background data
 @st.cache_resource
 def get_akd_background_data():
-    bg_AKI = np.load('https://raw.githubusercontent.com/ChanWeiKai0118/Research/main/X_background_AKI.npz')
-    X_background_AKI = bg_AKI['X_background_AKI']
-    return X_background_AKI
+    url = "https://raw.githubusercontent.com/ChanWeiKai0118/Research/main/X_background_AKI.npz"
+    response = requests.get(url)
+    response.raise_for_status()
+    with np.load(io.BytesIO(response.content)) as data:
+        return data["X_background_AKI"]
 
 def post_sequential_padding( # (for return_sequences True)
         data, groupby_col, selected_features, outcome, maxlen
