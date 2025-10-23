@@ -37,8 +37,6 @@ def get_model():
     model = load_model("AKD-LSTM.keras", compile=False)
     return model
 
-model = get_aki_model()
-
 # Load the AKD scaler
 @st.cache_resource
 def get_scaler():
@@ -583,6 +581,7 @@ def predict_fn_AKD (x_flat):
         x_flat = np.vstack([x_main, x_flat[n_full:], pad])
         n = x_flat.shape[0]
 
+    model = get_model()
     x_seq = x_flat.reshape(n // seq_len, seq_len, x_flat.shape[1])
     y_seq = model.predict(x_seq, verbose=0)
     y_flat = y_seq.reshape(-1, 1)
@@ -743,7 +742,8 @@ def predict_fn_AKI (x_flat):
         pad = -1 * np.ones((seq_len - remainder, x_flat.shape[1]))
         x_flat = np.vstack([x_main, x_flat[n_full:], pad])
         n = x_flat.shape[0]
-
+        
+    model = get_aki_model()
     x_seq = x_flat.reshape(n // seq_len, seq_len, x_flat.shape[1])
     y_seq = model.predict(x_seq, verbose=0)
     y_flat = y_seq.reshape(-1, 1)
