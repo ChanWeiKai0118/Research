@@ -13,3 +13,4 @@ tensorflow==2.18.0
 xgboost
 gdown
 Pillow
+shap
