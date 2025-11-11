@@ -756,10 +756,6 @@ def predict_fn_AKI (x_flat):
 def get_AKI_explainer():
     return shap.KernelExplainer(predict_fn_AKI, X_background_AKI)
 
-
-
-
-
 def get_aki_color(prob):
     if prob <= 42:
         return "green"   # Possiable Non-AKI
