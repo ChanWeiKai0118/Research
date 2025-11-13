@@ -859,7 +859,7 @@ def get_aki_color(prob):
 def get_akd_color(prob):
     if prob < 43:
         return "green"   # Low risk of AKD
-    else if prob < 75:
+    elif prob < 75:
         return "orange"   # Indeterminate risk of AKD
     else :
         return "red"     # High risk of AKD
@@ -873,7 +873,7 @@ def get_aki_status(prob):
 def get_akd_status(prob):
     if prob < 43:
         return "Low risk of AKD, suggest no intervention"
-    else if prob < 75:
+    elif prob < 75:
         return "Indeterminate risk of AKI, suggest observation"
     else :
         return  "High risk of AKD, suggest intervention"
