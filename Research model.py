@@ -506,8 +506,7 @@ def run_prediction_AKD(selected_rows):
     last_prob = flat_prob[-1] * 100
 
     
-    
-    # 針對不同百分比劑量進行預測
+    # ==============針對不同百分比劑量進行預測====================
     dose_adjustments = [100, 90, 80, 70]
     prediction_results = {}
     for percentage in dose_adjustments:
@@ -542,59 +541,108 @@ def run_prediction_AKD(selected_rows):
         prediction_results[f'{percentage}%'] = flat_prob_dose[-1] * 100
 
 
-    # == SHAP 準備病人資料==
-    feat_dim=20
-    X_test_flat_all = X_test.reshape(-1, feat_dim)              # 攤平成2維 shape = (batch_test*seq_len, feat_dim)
-    test_padding_mask = np.any(X_test_flat_all == -1, axis=1)      # padding masking
-    X_test_valid_rows = X_test_flat_all[~test_padding_mask]           # padding masking
-    # == 取得 explainer==
-    AKD_explainer = get_AKD_explainer()
-    # === 計算 SHAP 值 ===
-    shap_values = AKD_explainer.shap_values(X_test_valid_rows, nsamples=100)
-    squeeze_shap_values = shap_values.squeeze(-1)                 # SHAP value 3維轉2維
-    selected_shap_values = squeeze_shap_values [-1,:]              #取最後一筆
+        # =========== 加入 SHAP 計算 =================
+    X_background = get_akd_background_data()  # 你要先定義這個函數來載入背景資料
+    shap_list, info_list = compute_shap_current_timepoint_AKD(
+        X_test,
+        X_background,
+        model
+    )
+    shap_values_last = shap_list[-1]
+    shap_info_last = info_list[-1]
 
-    return last_prob, prediction_results, dose_percentage, selected_shap_values
+    return last_prob, prediction_results, dose_percentage, shap_values_last, shap_info_last
 
 
 # =======================
 # AKD SHAP Function
 # =======================
-# 背景資料
-X_background_AKD = get_akd_background_data()
-seq_len = 6  # 你的 LSTM 輸入長度
-
-# === predict_fn_AKD for SHAP ===
-def predict_fn_AKD (x_flat):
-    n = x_flat.shape[0]
-
-    if n < seq_len:
-        pad_size = seq_len - n
-        pad = -1 * np.ones((pad_size, x_flat.shape[1]))
-        x_flat = np.vstack([x_flat, pad])
-        n = seq_len
-    elif n % seq_len != 0:
-        n_full = (n // seq_len) * seq_len
-        remainder = n - n_full
-        x_main = x_flat[:n_full]
-        pad = -1 * np.ones((seq_len - remainder, x_flat.shape[1]))
-        x_flat = np.vstack([x_main, x_flat[n_full:], pad])
-        n = x_flat.shape[0]
-
-    model = get_model()
-    x_seq = x_flat.reshape(n // seq_len, seq_len, x_flat.shape[1])
-    y_seq = model.predict(x_seq, verbose=0)
-    y_flat = y_seq.reshape(-1, 1)
-    padding_mask = np.any(x_flat == -1, axis=1)
-    y_flat_valid = y_flat[~padding_mask]
-    return y_flat_valid
-
 # === 建立 explainer (只初始化一次) ===
 @st.cache_resource
-def get_AKD_explainer():
-    return shap.KernelExplainer(predict_fn_AKD, X_background_AKD)
+def compute_shap_current_timepoint_AKD(X_test, X_background, model):
+    """
+    用完整序列(包含padding)預測,但只計算當前時間點特徵的 SHAP
+    """
 
-AKD_explainer = get_AKD_explainer()
+    def group_by_length(X):
+        groups = {}
+        for i, seq in enumerate(X):
+            valid_len = (seq != -1).all(axis=1).sum()
+            if valid_len not in groups:
+                groups[valid_len] = []
+            groups[valid_len].append(i)
+        return {k: np.array(v) for k, v in groups.items()}
+
+    test_groups = group_by_length(X_test)
+    bg_groups = group_by_length(X_background)
+
+    all_timepoint_shaps = []
+    all_timepoint_info = []
+
+    for length in sorted(test_groups.keys()):
+        test_idx = test_groups[length]
+
+        if length not in bg_groups:
+            continue
+        bg_idx = bg_groups[length]
+
+        print(f"處理長度 {length}: {len(test_idx)} 個測試樣本")
+
+        # === 對每個時間點分別計算 SHAP ===
+        for target_time in range(length):
+            print(f"  - 計算時間點 t{target_time} 的 SHAP")
+
+            # === 對每個病患單獨計算 SHAP ===
+            for patient_idx in test_idx:
+                # 取得這個病患的完整序列(包含 padding!)
+                patient_seq_full = X_test[patient_idx]  # (6, 20) 完整的,有 padding
+
+                # 當前時間點的特徵
+                current_features = patient_seq_full[target_time, :]  # (20,)
+
+                # Background: 同樣長度病患的當前時間點特徵
+                bg_current = X_background[bg_idx, target_time, :]  # (n_bg, 20)
+
+                # === 定義 predict function ===
+                def pred_fn_patient(X_current):
+                    """
+                    X_current: (batch, 20) - 當前時間點的特徵變化
+
+                    關鍵:
+                    1. 用完整序列(6個時間點,包含padding)預測
+                    2. 只改變當前時間點的特徵
+                    3. 返回當前時間點的預測機率
+                    """
+                    n = X_current.shape[0]
+
+                    # 建立完整序列 (6, 20) 包含 padding
+                    X_3d = np.tile(patient_seq_full, (n, 1, 1))  # (n, 6, 20)
+
+                    # 只替換當前時間點的特徵
+                    X_3d[:, target_time, :] = X_current
+
+                    # 用完整序列預測 (包含 padding)
+                    preds = model.predict(X_3d, verbose=0)  # (n, 6, 1)
+
+                    # 只返回當前時間點的預測
+                    return preds[:, target_time, :]  # (n, 1)
+
+                # 計算這個病患在這個時間點的 SHAP
+                explainer = shap.KernelExplainer(pred_fn_patient, bg_current)
+                shap_val = explainer.shap_values(
+                    current_features.reshape(1, -1),
+                    nsamples=100
+                )  # (1, 20)
+
+                # 儲存
+                all_timepoint_shaps.append(shap_val[0])  # (20,)
+                all_timepoint_info.append({
+                    'patient_id': patient_idx,
+                    'time': target_time,
+                    'total_length': length
+                })
+
+    return shap_list, info_list
 
 
 
@@ -705,19 +753,7 @@ def run_prediction_AKI(selected_rows):
         flat_prob_dose = y_prob_dose[valid_indices]
         prediction_results[f'{percentage}%'] = flat_prob_dose[-1] * 100
 
-    # == SHAP 準備病人資料==
-    feat_dim=20
-    X_test_flat_all = X_test.reshape(-1, feat_dim)              # 攤平成2維 shape = (batch_test*seq_len, feat_dim)
-    test_padding_mask = np.any(X_test_flat_all == -1, axis=1)      # padding masking
-    X_test_valid_rows = X_test_flat_all[~test_padding_mask]           # padding masking
-    # == 取得 explainer==
-    AKI_explainer = get_AKI_explainer()
-    # === 計算 SHAP 值 ===
-    shap_values = AKI_explainer.shap_values(X_test_valid_rows, nsamples=100)
-    squeeze_shap_values = shap_values.squeeze(-1)                 # SHAP value 3維轉2維
-    selected_shap_values = squeeze_shap_values [-1,:]              #取最後一筆
-
-    return last_prob, prediction_results, dose_percentage, selected_shap_values
+    
 
 # =======================
 # AKI SHAP Function
@@ -757,28 +793,32 @@ def get_AKI_explainer():
     return shap.KernelExplainer(predict_fn_AKI, X_background_AKI)
 
 def get_aki_color(prob):
-    if prob <= 42:
-        return "green"   # Possiable Non-AKI
+    if prob <= 62:
+        return "green"   # Low risk of AKI
     else:
-        return "red"     # Possiable AKI
+        return "red"     # High risk of AKI
 
 def get_akd_color(prob):
-    if prob <= 13:
-        return "green"   # Possiable Non-AKD
-    else:
-        return "red"     # Possiable AKD
+    if prob < 43:
+        return "green"   # Low risk of AKD
+    else if prob < 75:
+        return "orange"   # Indeterminate risk of AKD
+    else :
+        return "red"     # High risk of AKD
         
 def get_aki_status(prob):
-    if prob <= 42:
-        return "Possible Non-AKI"
+    if prob <= 62:
+        return "Low risk of AKI, suggest no intervention"
     else:
-        return "Possible AKI"
+        return "High risk of AKI, suggest intervention"
 
 def get_akd_status(prob):
-    if prob <= 13:
-        return "Possible Non-AKD"
-    else:
-        return "Possible AKD"
+    if prob < 43:
+        return "Low risk of AKD, suggest no intervention"
+    else if prob < 75:
+        return "Indeterminate risk of AKI, suggest observation"
+    else :
+        return  "High risk of AKD, suggest intervention"
 
 # === 第二個 Streamlit UI ===
 st.markdown(
