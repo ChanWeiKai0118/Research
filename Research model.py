@@ -1060,30 +1060,39 @@ elif mode == "Prediction mode":
                     st.subheader("Data for Prediction")
                     st.dataframe(selected_rows)
 
-                    # Run AKD
+                    # ========Run AKD==============
                     st.markdown("## 🧮 AKD Prediction")
                     akd_prob, akd_results,dose_percentage_AKD, shap_values_AKD, shap_info_AKD, shap_data_AKD= run_prediction_AKD(selected_rows)
                     st.markdown(f"### Predicted AKD Risk: <br> <span style='color:{get_akd_color(akd_prob)};font-weight:bold;'>{akd_prob:.4f}%</span> (dose at {dose_percentage_AKD}%)",unsafe_allow_html=True)
 
-                    # ====SHAP individual waterfall plot=======
+                    # ----SHAP individual waterfall plot----
                     # 將 shap_values 轉成 np.array shape=(20,)
-                    shap_vals = np.array(shap_values_AKD).flatten()
+                    shap_vals_AKD = np.array(shap_values_AKD).flatten()
                     plot_waterfall_single_patient_streamlit(
-                    shap_vals,
+                    shap_vals_AKD,
                     shap_data_AKD,
                     feature_names=selected_features_AKD,
                     )
 
-                    
                     st.markdown(f"### <span style='color:{get_akd_color(akd_prob)}; font-weight:bold;'>{get_akd_status(akd_prob)}</span>",unsafe_allow_html=True)
                     for k, v in akd_results.items():
                         st.info(f"{k} dose → Predicted AKD Risk: **{v:.4f}%**")
 
 
-                    # Run AKI
+                    # =========Run AKI==============
                     st.markdown("## 🧮 AKI Prediction")
                     aki_prob, aki_results,dose_percentage_AKI, shap_values_AKI, shap_info_AKI, shap_data_AKI = run_prediction_AKI(selected_rows)
                     st.markdown(f"### Predicted AKI Risk: <br> <span style='color:{get_aki_color(aki_prob)}; font-weight:bold;'>{aki_prob:.2f}%</span> (dose at {dose_percentage_AKI}%)",unsafe_allow_html=True)
+                    
+                    # ----SHAP individual waterfall plot----
+                    # 將 shap_values 轉成 np.array shape=(20,)
+                    shap_vals_AKI = np.array(shap_values_AKI).flatten()
+                    plot_waterfall_single_patient_streamlit(
+                    shap_vals_AKI,
+                    shap_data_AKI,
+                    feature_names=selected_features_AKI,
+                    )
+
                     st.markdown(f"### <span style='color:{get_aki_color(aki_prob)}; font-weight:bold;'>{get_aki_status(aki_prob)}</span>",unsafe_allow_html=True)
                     for k, v in aki_results.items():
                         st.info(f"{k} dose → Predicted AKI Risk: **{v:.2f}%**")
