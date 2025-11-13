@@ -595,8 +595,6 @@ def compute_shap_current_timepoint_AKD(X_test, X_background, model, random_state
     last_valid_len = valid_lens[last_valid_idx]
     target_time = last_valid_len - 1
 
-    st.write(f"🧩 僅針對樣本 {last_valid_idx}（有效長度 {last_valid_len}）的最後時間點 t{target_time} 計算 SHAP")
-
     # === 建立群組 ===
     bg_groups = group_by_length(X_background)
     if last_valid_len not in bg_groups:
@@ -805,8 +803,6 @@ def compute_shap_current_timepoint_AKI(X_test, X_background, model, random_state
     last_valid_idx = non_zero_idx[-1]
     last_valid_len = valid_lens[last_valid_idx]
     target_time = last_valid_len - 1
-
-    st.write(f"🧩 僅針對樣本 {last_valid_idx}（有效長度 {last_valid_len}）的最後時間點 t{target_time} 計算 SHAP")
 
     # === 建立群組 ===
     bg_groups = group_by_length(X_background)
