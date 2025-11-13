@@ -552,7 +552,10 @@ def run_prediction_AKD(selected_rows):
     shap_values_last = shap_list
     shap_info_last = info_list
 
-    return last_prob, prediction_results, dose_percentage, shap_values_last, shap_info_last
+    # 製作SHAP資料的原始數據
+    shap_data = input_data_pred.drop(columns=["id_no","akd"]).iloc[-1]
+    
+    return last_prob, prediction_results, dose_percentage, shap_values_last, shap_info_last, shap_data
 
 
 # =======================
@@ -759,7 +762,10 @@ def run_prediction_AKI(selected_rows):
     shap_values_last = shap_list
     shap_info_last = info_list
 
-    return last_prob, prediction_results, dose_percentage, shap_values_last, shap_info_last
+    # 製作SHAP資料的原始數據
+    shap_data = input_data_pred.drop(columns=["id_no","akd"]).iloc[-1]
+    
+    return last_prob, prediction_results, dose_percentage, shap_values_last, shap_info_last, shap_data
 
     
 
@@ -1020,10 +1026,10 @@ elif mode == "Prediction mode":
 
                     # Run AKD
                     st.markdown("## 🧮 AKD Prediction")
-                    akd_prob, akd_results,dose_percentage_AKD, shap_values_AKD, shap_info_AKD= run_prediction_AKD(selected_rows)
+                    akd_prob, akd_results,dose_percentage_AKD, shap_values_AKD, shap_info_AKD, shap_data_AKD= run_prediction_AKD(selected_rows)
                     st.markdown(f"### Predicted AKD Risk: <br> <span style='color:{get_akd_color(akd_prob)};font-weight:bold;'>{akd_prob:.4f}%</span> (dose at {dose_percentage_AKD}%)",unsafe_allow_html=True)
                     st.markdown(shap_values_AKD)
-                    st.markdown(shap_info_AKD)
+                    st.markdown(shap_data_AKD)
                     st.markdown(f"### <span style='color:{get_akd_color(akd_prob)}; font-weight:bold;'>{get_akd_status(akd_prob)}</span>",unsafe_allow_html=True)
                     for k, v in akd_results.items():
                         st.info(f"{k} dose → Predicted AKD Risk: **{v:.4f}%**")
@@ -1031,7 +1037,7 @@ elif mode == "Prediction mode":
 
                     # Run AKI
                     st.markdown("## 🧮 AKI Prediction")
-                    aki_prob, aki_results,dose_percentage_AKI, shap_values_AKI, shap_info_AKI = run_prediction_AKI(selected_rows)
+                    aki_prob, aki_results,dose_percentage_AKI, shap_values_AKI, shap_info_AKI, shap_data_AKI = run_prediction_AKI(selected_rows)
                     st.markdown(f"### Predicted AKI Risk: <br> <span style='color:{get_aki_color(aki_prob)}; font-weight:bold;'>{aki_prob:.2f}%</span> (dose at {dose_percentage_AKI}%)",unsafe_allow_html=True)
                     st.markdown(f"### <span style='color:{get_aki_color(aki_prob)}; font-weight:bold;'>{get_aki_status(aki_prob)}</span>",unsafe_allow_html=True)
                     for k, v in aki_results.items():
