@@ -991,6 +991,21 @@ elif mode == "Prediction mode":
     input_date = st.date_input("Treatment Date", datetime.date.today())
     input_date_str = input_date.strftime("%Y/%m/%d")
 
+    selected_features_AKD = [
+                    'age', 'weight', 'number_of_nephrotoxins', 'treatment_duration', 
+                     'cis_dose', 'latest_hemoglobin', 'latest_egfr', 'baseline_hemoglobin', 
+                     'baseline_bun', 'baseline_bun/scr', 'baseline_crcl', 'baseline_sodium', 
+                     'baseline_potassium', 'carb_cum_dose', 'average_cis_cum_dose', 
+                     'hemoglobin_change', 'crcl_change', 'potassium_change', 'crcl_slope', 
+                     'aki_history']
+    
+    selected_features_AKI = [
+        'age', 'weight', 'number_of_nephrotoxins', 'treatment_duration', 'cis_dose', 
+        'latest_hemoglobin', 'latest_bun/scr', 'latest_egfr', 'baseline_hemoglobin',
+        'baseline_bun/scr', 'baseline_crcl', 'cis_cum_dose', 'carb_cum_dose',
+        'average_cis_cum_dose', 'bun_change', 'bun/scr_change', 'crcl_change',
+        'potassium_change', 'crcl_slope', 'aki_history']
+    
     if st.button("Run Prediction"):
         if input_number and input_date_str:
             try:
@@ -1028,8 +1043,26 @@ elif mode == "Prediction mode":
                     st.markdown("## 🧮 AKD Prediction")
                     akd_prob, akd_results,dose_percentage_AKD, shap_values_AKD, shap_info_AKD, shap_data_AKD= run_prediction_AKD(selected_rows)
                     st.markdown(f"### Predicted AKD Risk: <br> <span style='color:{get_akd_color(akd_prob)};font-weight:bold;'>{akd_prob:.4f}%</span> (dose at {dose_percentage_AKD}%)",unsafe_allow_html=True)
-                    st.markdown(shap_values_AKD)
-                    st.markdown(shap_data_AKD)
+
+                    # ====SHAP individual waterfall plot=======
+                    # 將 shap_values 轉成 np.array shape=(20,)
+                    shap_vals = np.array(shap_values_AKD).flatten()
+                    
+                    # 將原始 feature 值轉成 np.array shape=(20,)
+                    feature_values = shap_data_AKD.values
+                    
+                    # 建立 shap.Explanation 物件
+                    expl = shap.Explanation(
+                        values=shap_vals,
+                        base_values=0,  # 如果是 logit 或百分比，可設定為模型基準值
+                        data=feature_values,
+                        feature_names=selected_features_AKD
+                    )
+                    
+                    # 5️⃣ 繪製 waterfall plot
+                    st.write("### SHAP Waterfall Plot")
+                    shap.plots.waterfall(ex, max_display=7) 
+                    
                     st.markdown(f"### <span style='color:{get_akd_color(akd_prob)}; font-weight:bold;'>{get_akd_status(akd_prob)}</span>",unsafe_allow_html=True)
                     for k, v in akd_results.items():
                         st.info(f"{k} dose → Predicted AKD Risk: **{v:.4f}%**")
