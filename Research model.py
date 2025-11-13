@@ -342,13 +342,14 @@ st.markdown(
         <p><strong>※ Model probability classification (for reference)</strong></p>
         <p><strong>AKD probability:</strong></p>
         <ul>
-            <li><span style="color:green;">Possiable Non-AKD:</span> 0% ~ 13%</li>
-            <li><span style="color:red;">Possiable AKD:</span> 13% ~ 100%</li>
+            <li><span style="color:green;">Low risk of AKD:</span> 0% ~ 43%</li>
+            <li><span style="color:orange;">Intermediate risk of AKD:</span> 43% ~ 75%</li>
+            <li><span style="color:red;">High risk of AKD:</span> 75% ~ 100%</li>
         </ul>
         <p><strong>AKI probability:</strong></p>
         <ul>
-            <li><span style="color:green;">Possiable Non-AKI:</span> 0% ~ 42%</li>
-            <li><span style="color:red;">Possiable AKI:</span> 42% ~ 100%</li>
+            <li><span style="color:green;">Low risk of AKI:</span> 0% ~ 62%</li>
+            <li><span style="color:red;">High risk of AKI:</span> 62% ~ 100%</li>
         </ul>
     </div>
     """,
@@ -860,7 +861,7 @@ def get_akd_color(prob):
     if prob < 43:
         return "green"   # Low risk of AKD
     elif prob < 75:
-        return "orange"   # Indeterminate risk of AKD
+        return "orange"   # Intermediate risk of AKD
     else:
         return "red"     # High risk of AKD
         
@@ -874,7 +875,7 @@ def get_akd_status(prob):
     if prob < 43:
         return "Low risk of AKD, suggest no intervention"
     elif prob < 75:
-        return "Indeterminate risk of AKI, suggest observation"
+        return "Intermediate risk of AKI, suggest observation"
     else:
         return  "High risk of AKD, suggest intervention"
 
