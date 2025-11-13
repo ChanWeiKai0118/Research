@@ -118,6 +118,154 @@ def get_aki_background_data():
     with np.load(io.BytesIO(response.content)) as data:
         return data["X_background_AKI"]
 
+# ============================================
+# 快取 Background 相關資源
+# ============================================
+
+@st.cache_resource
+def get_aki_background_preprocessed(random_state=42):
+    """
+    預處理並快取 AKI 的 background 資料
+    返回: (bg_full, bg_groups)
+    """
+    X_background = get_aki_background_data()  # 原始背景資料
+    def valid_length(seq):
+        return (seq != -1).all(axis=1).sum()
+    
+    def group_by_length(X):
+        groups = {}
+        for i, seq in enumerate(X):
+            vlen = valid_length(seq)
+            if vlen == 0:
+                continue
+            groups.setdefault(vlen, []).append(i)
+        return {k: np.array(v) for k, v in groups.items()}
+    
+    bg_groups = group_by_length(X_background)
+    
+    return X_background, bg_groups
+
+
+@st.cache_resource
+def get_akd_background_preprocessed(random_state=42):
+    """
+    預處理並快取 AKD 的 background 資料
+    """
+    X_background = get_akd_background_data()
+    def valid_length(seq):
+        return (seq != -1).all(axis=1).sum()
+    
+    def group_by_length(X):
+        groups = {}
+        for i, seq in enumerate(X):
+            vlen = valid_length(seq)
+            if vlen == 0:
+                continue
+            groups.setdefault(vlen, []).append(i)
+        return {k: np.array(v) for k, v in groups.items()}
+    
+    bg_groups = group_by_length(X_background)
+    
+    return X_background, bg_groups
+# ============================================
+# 計算並快取 Base Value
+# ============================================
+
+@st.cache_resource
+def compute_base_value_AKI(target_length, _model, n_background=250, random_state=42):
+    """
+    計算 AKI 模型在特定序列長度下的 base value
+    
+    Args:
+        target_length: 目標序列長度 (例如 6)
+        _model: 模型物件 (加底線避免被 hash)
+        n_background: 使用的背景樣本數量
+        random_state: 隨機種子
+    
+    Returns:
+        float: base_value (background 的平均預測風險)
+    """
+    X_background, bg_groups = get_aki_background_preprocessed(random_state)
+    
+    if target_length not in bg_groups:
+        st.warning(f"⚠️ Background 中沒有長度 {target_length} 的樣本，使用預設 base_value=0")
+        return 0.0
+    
+    # 隨機選擇 background 樣本
+    rng = np.random.default_rng(random_state)
+    bg_idx = bg_groups[target_length]
+    
+    if len(bg_idx) > n_background:
+        bg_idx = rng.choice(bg_idx, size=n_background, replace=False)
+    
+    bg_full = X_background[bg_idx]  # (n_bg, 6, 20)
+    target_time = target_length - 1
+    bg_current = bg_full[:, target_time, :]  # (n_bg, 20)
+    
+    # 定義預測函數（與 SHAP 使用的相同邏輯）
+    def pred_fn_background(X_current):
+        """用完整序列預測，只替換當前時間點"""
+        n = X_current.shape[0]
+        # 這裡用 bg_full 的第一個樣本作為模板（實際上每個背景樣本都自己預測）
+        X_3d_list = []
+        for i in range(n):
+            X_3d_single = bg_full[i].copy()
+            X_3d_single[target_time, :] = X_current[i]
+            X_3d_list.append(X_3d_single)
+        
+        X_3d = np.array(X_3d_list)  # (n, 6, 20)
+        preds = _model.predict(X_3d, verbose=0)  # (n, 6, 1)
+        return preds[:, target_time, :].flatten()  # (n,)
+    
+    # 計算 background 的預測值
+    bg_preds = pred_fn_background(bg_current)
+    base_value = float(np.mean(bg_preds))
+    
+    st.info(f"✅ AKI Base Value (長度={target_length}): {base_value:.4f} ({len(bg_idx)} 個樣本)")
+    
+    return base_value
+
+
+@st.cache_resource
+def compute_base_value_AKD(target_length, _model, n_background=250, random_state=42):
+    """
+    計算 AKD 模型在特定序列長度下的 base value
+    """
+    X_background, bg_groups = get_akd_background_preprocessed(random_state)
+    
+    if target_length not in bg_groups:
+        st.warning(f"⚠️ Background 中沒有長度 {target_length} 的樣本，使用預設 base_value=0")
+        return 0.0
+    
+    rng = np.random.default_rng(random_state)
+    bg_idx = bg_groups[target_length]
+    
+    if len(bg_idx) > n_background:
+        bg_idx = rng.choice(bg_idx, size=n_background, replace=False)
+    
+    bg_full = X_background[bg_idx]
+    target_time = target_length - 1
+    bg_current = bg_full[:, target_time, :]
+    
+    def pred_fn_background(X_current):
+        n = X_current.shape[0]
+        X_3d_list = []
+        for i in range(n):
+            X_3d_single = bg_full[i].copy()
+            X_3d_single[target_time, :] = X_current[i]
+            X_3d_list.append(X_3d_single)
+        
+        X_3d = np.array(X_3d_list)
+        preds = _model.predict(X_3d, verbose=0)
+        return preds[:, target_time, :].flatten()
+    
+    bg_preds = pred_fn_background(bg_current)
+    base_value = float(np.mean(bg_preds))
+    
+    st.info(f"✅ AKD Base Value (長度={target_length}): {base_value:.4f} ({len(bg_idx)} 個樣本)")
+    
+    return base_value
+    
 def post_sequential_padding( # (for return_sequences True)
         data, groupby_col, selected_features, outcome, maxlen
     ):
@@ -544,19 +692,31 @@ def run_prediction_AKD(selected_rows):
 
 
     # =========== 加入 SHAP 計算 =================
-    X_background_akd = get_akd_background_data()  # 你要先定義這個函數來載入背景資料
-    shap_list, info_list = compute_shap_current_timepoint_AKD(
+    X_background_akd = get_akd_background_data()
+    
+    shap_values_last, shap_info_last = compute_shap_current_timepoint_AKD(
         X_test,
         X_background_akd,
-        model
+        model,
+        random_state=42
     )
-    shap_values_last = shap_list
-    shap_info_last = info_list
+    
+    # =========== 計算 Base Value =================
+    target_length = shap_info_last['total_length']  # 從 info 取得序列長度
+    
+    # 使用快取函數取得 base value
+    base_value_akd = get_base_value_AKD(
+        target_length=target_length,
+        _model=model,
+        X_background=X_background_akd,  # 傳入已載入的 background
+        n_background=300,
+        random_state=42
+    )
 
     # 製作SHAP資料的原始數據
     shap_data = input_data_pred.drop(columns=["id_no","akd"]).iloc[-1]
     
-    return last_prob, prediction_results, dose_percentage, shap_values_last, shap_info_last, shap_data
+    return last_prob, prediction_results, dose_percentage, shap_values_last, shap_info_last, shap_data, base_value_akd
 
 
 # =======================
@@ -752,19 +912,31 @@ def run_prediction_AKI(selected_rows):
         prediction_results[f'{percentage}%'] = flat_prob_dose[-1] * 100
 
     # =========== 加入 SHAP 計算 =================
-    X_background_aki = get_aki_background_data()  # 你要先定義這個函數來載入背景資料
-    shap_list, info_list = compute_shap_current_timepoint_AKI(
+    X_background_aki = get_aki_background_data()
+    
+    shap_values_last, shap_info_last = compute_shap_current_timepoint_AKI(
         X_test,
         X_background_aki,
-        model
+        model,
+        random_state=42
     )
-    shap_values_last = shap_list
-    shap_info_last = info_list
-
-    # 製作SHAP資料的原始數據
-    shap_data = input_data_pred.drop(columns=["id_no","aki"]).iloc[-1]
     
-    return last_prob, prediction_results, dose_percentage, shap_values_last, shap_info_last, shap_data
+    # =========== 計算 Base Value =================
+    target_length = shap_info_last['total_length']  # 從 info 取得序列長度
+    
+    # 使用快取函數取得 base value
+    base_value_aki = get_base_value_AKI(
+        target_length=target_length,
+        _model=model,
+        X_background=X_background_aki,  # 傳入已載入的 background
+        n_background=300,
+        random_state=42
+    )
+    
+    # 製作 SHAP 資料的原始數據
+    shap_data = input_data_pred.drop(columns=["id_no", "aki"]).iloc[-1]
+    
+    return last_prob, prediction_results, dose_percentage, shap_values_last, shap_info_last, shap_data, base_value_aki  
 
     
 
@@ -882,7 +1054,7 @@ def get_akd_status(prob):
     else:
         return  "High risk of AKD, suggest intervention"
 
-def plot_waterfall_single_patient_streamlit(shap_values, shap_data, feature_names, base_value=0):
+def plot_waterfall_single_patient_streamlit(shap_values, shap_data, feature_names, base_value):
     # 原始特徵值
     feature_vals = shap_data.values.astype(float)
     feature_vals_formatted = np.round(feature_vals, 3)
@@ -1058,7 +1230,7 @@ elif mode == "Prediction mode":
 
                     # ========Run AKD==============
                     st.markdown("## 🧮 AKD Prediction")
-                    akd_prob, akd_results,dose_percentage_AKD, shap_values_AKD, shap_info_AKD, shap_data_AKD= run_prediction_AKD(selected_rows)
+                    akd_prob, akd_results,dose_percentage_AKD, shap_values_AKD, shap_info_AKD, shap_data_AKD, base_value_AKD= run_prediction_AKD(selected_rows)
                     st.markdown(f"### Predicted AKD Risk: <br> <span style='color:{get_akd_color(akd_prob)};font-weight:bold;'>{akd_prob:.4f}%</span> (dose at {dose_percentage_AKD}%)",unsafe_allow_html=True)
                     st.markdown(f"### <span style='color:{get_akd_color(akd_prob)}; font-weight:bold;'>{get_akd_status(akd_prob)}</span>",unsafe_allow_html=True)
                     
@@ -1069,6 +1241,7 @@ elif mode == "Prediction mode":
                     shap_vals_AKD,
                     shap_data_AKD,
                     feature_names=selected_features_AKD,
+                    base_value=base_value_AKD
                     )
                     
                     for k, v in akd_results.items():
@@ -1077,7 +1250,7 @@ elif mode == "Prediction mode":
 
                     # =========Run AKI==============
                     st.markdown("## 🧮 AKI Prediction")
-                    aki_prob, aki_results,dose_percentage_AKI, shap_values_AKI, shap_info_AKI, shap_data_AKI = run_prediction_AKI(selected_rows)
+                    aki_prob, aki_results,dose_percentage_AKI, shap_values_AKI, shap_info_AKI, shap_data_AKI, base_value_AKI = run_prediction_AKI(selected_rows)
                     st.markdown(f"### Predicted AKI Risk: <br> <span style='color:{get_aki_color(aki_prob)}; font-weight:bold;'>{aki_prob:.2f}%</span> (dose at {dose_percentage_AKI}%)",unsafe_allow_html=True)
                     st.markdown(f"### <span style='color:{get_aki_color(aki_prob)}; font-weight:bold;'>{get_aki_status(aki_prob)}</span>",unsafe_allow_html=True)
                     
@@ -1088,6 +1261,7 @@ elif mode == "Prediction mode":
                     shap_vals_AKI,
                     shap_data_AKI,
                     feature_names=selected_features_AKI,
+                    base_value=base_value_AKI
                     )
 
                     for k, v in aki_results.items():
