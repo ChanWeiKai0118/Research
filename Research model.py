@@ -764,7 +764,7 @@ def run_prediction_AKI(selected_rows):
     shap_info_last = info_list
 
     # 製作SHAP資料的原始數據
-    shap_data = input_data_pred.drop(columns=["id_no","akd"]).iloc[-1]
+    shap_data = input_data_pred.drop(columns=["id_no","aki"]).iloc[-1]
     
     return last_prob, prediction_results, dose_percentage, shap_values_last, shap_info_last, shap_data
 
