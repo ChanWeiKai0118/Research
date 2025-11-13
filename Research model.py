@@ -541,11 +541,11 @@ def run_prediction_AKD(selected_rows):
         prediction_results[f'{percentage}%'] = flat_prob_dose[-1] * 100
 
 
-        # =========== 加入 SHAP 計算 =================
-    X_background = get_akd_background_data()  # 你要先定義這個函數來載入背景資料
+    # =========== 加入 SHAP 計算 =================
+    X_background_akd = get_akd_background_data()  # 你要先定義這個函數來載入背景資料
     shap_list, info_list = compute_shap_current_timepoint_AKD(
         X_test,
-        X_background,
+        X_background_akd,
         model
     )
     shap_values_last = shap_list[-1]
@@ -559,93 +559,88 @@ def run_prediction_AKD(selected_rows):
 # =======================
 # === 建立 explainer (只初始化一次) ===
 @st.cache_resource
-def compute_shap_current_timepoint_AKD(X_test, X_background, model):
+def compute_shap_current_timepoint_AKD(X_test, X_background, model, random_state=42):
     """
-    用完整序列(包含padding)預測,但只計算當前時間點特徵的 SHAP
+    僅針對最後一個有效樣本的最後有效時間點計算 SHAP 值。
+    ✅ 使用完整序列進行預測
+    ✅ Background 仍是完整序列，只在 predict_fn 內替換當前時間點
     """
+
+    def valid_length(seq):
+        """計算序列有效長度 (排除 padding -1)。"""
+        return (seq != -1).all(axis=1).sum()
 
     def group_by_length(X):
+        """根據有效時間長度分組。"""
         groups = {}
         for i, seq in enumerate(X):
-            valid_len = (seq != -1).all(axis=1).sum()
-            if valid_len not in groups:
-                groups[valid_len] = []
-            groups[valid_len].append(i)
+            vlen = valid_length(seq)
+            if vlen == 0:
+                continue
+            groups.setdefault(vlen, []).append(i)
         return {k: np.array(v) for k, v in groups.items()}
 
-    test_groups = group_by_length(X_test)
+    # === 找出 X_test 中最後一個有效樣本 ===
+    valid_lens = np.array([valid_length(x) for x in X_test])
+    non_zero_idx = np.where(valid_lens > 0)[0]
+    if len(non_zero_idx) == 0:
+        raise ValueError("X_test 中沒有有效樣本！")
+
+    last_valid_idx = non_zero_idx[-1]
+    last_valid_len = valid_lens[last_valid_idx]
+    target_time = last_valid_len - 1
+
+    st.write(f"🧩 僅針對樣本 {last_valid_idx}（有效長度 {last_valid_len}）的最後時間點 t{target_time} 計算 SHAP")
+
+    # === 建立群組 ===
     bg_groups = group_by_length(X_background)
+    if last_valid_len not in bg_groups:
+        raise ValueError(f"Background 中沒有長度 {last_valid_len} 的樣本。")
 
-    all_timepoint_shaps = []
-    all_timepoint_info = []
+    # === 隨機取 300 個 background ===
+    rng = np.random.default_rng(random_state)
+    bg_idx = bg_groups[last_valid_len]
+    if len(bg_idx) > 300:
+        bg_idx = rng.choice(bg_idx, size=300, replace=False)
 
-    for length in sorted(test_groups.keys()):
-        test_idx = test_groups[length]
+    # === 準備資料 ===
+    patient_seq_full = X_test[last_valid_idx]          # (6, 20)
+    bg_full = X_background[bg_idx]                     # (n_bg, 6, 20)
+    current_features = patient_seq_full[target_time]   # (20,)
 
-        if length not in bg_groups:
-            continue
-        bg_idx = bg_groups[length]
+    # === 定義 predict_fn ===
+    def pred_fn_patient(X_current):
+        """
+        X_current: (batch, 20)
+        ✅ 用完整序列預測
+        ✅ 只替換當前時間點特徵
+        ✅ 返回該時間點預測機率
+        """
+        n = X_current.shape[0]
+        X_3d = np.tile(patient_seq_full, (n, 1, 1))  # (n, 6, 20)
+        X_3d[:, target_time, :] = X_current
+        preds = model.predict(X_3d, verbose=0)       # (n, 6, 1)
+        return preds[:, target_time, :]              # (n, 1)
 
-        print(f"處理長度 {length}: {len(test_idx)} 個測試樣本")
+    # === 建立 explainer ===
+    # 注意：這裡 background 是「完整序列」，但 explainer 只需要當前時間點的特徵作為背景
+    # 所以要取出 bg_full 對應時間點的特徵
+    bg_current = bg_full[:, target_time, :]           # (n_bg, 20)
+    explainer = shap.KernelExplainer(pred_fn_patient, bg_current)
 
-        # === 對每個時間點分別計算 SHAP ===
-        for target_time in range(length):
-            print(f"  - 計算時間點 t{target_time} 的 SHAP")
+    # === 計算 SHAP 值 ===
+    shap_val = explainer.shap_values(
+        current_features.reshape(1, -1),
+        nsamples=100
+    )
 
-            # === 對每個病患單獨計算 SHAP ===
-            for patient_idx in test_idx:
-                # 取得這個病患的完整序列(包含 padding!)
-                patient_seq_full = X_test[patient_idx]  # (6, 20) 完整的,有 padding
+    info = {
+        'patient_id': last_valid_idx,
+        'time': target_time,
+        'total_length': last_valid_len
+    }
 
-                # 當前時間點的特徵
-                current_features = patient_seq_full[target_time, :]  # (20,)
-
-                # Background: 同樣長度病患的當前時間點特徵
-                bg_current = X_background[bg_idx, target_time, :]  # (n_bg, 20)
-
-                # === 定義 predict function ===
-                def pred_fn_patient(X_current):
-                    """
-                    X_current: (batch, 20) - 當前時間點的特徵變化
-
-                    關鍵:
-                    1. 用完整序列(6個時間點,包含padding)預測
-                    2. 只改變當前時間點的特徵
-                    3. 返回當前時間點的預測機率
-                    """
-                    n = X_current.shape[0]
-
-                    # 建立完整序列 (6, 20) 包含 padding
-                    X_3d = np.tile(patient_seq_full, (n, 1, 1))  # (n, 6, 20)
-
-                    # 只替換當前時間點的特徵
-                    X_3d[:, target_time, :] = X_current
-
-                    # 用完整序列預測 (包含 padding)
-                    preds = model.predict(X_3d, verbose=0)  # (n, 6, 1)
-
-                    # 只返回當前時間點的預測
-                    return preds[:, target_time, :]  # (n, 1)
-
-                # 計算這個病患在這個時間點的 SHAP
-                explainer = shap.KernelExplainer(pred_fn_patient, bg_current)
-                shap_val = explainer.shap_values(
-                    current_features.reshape(1, -1),
-                    nsamples=100
-                )  # (1, 20)
-
-                # 儲存
-                all_timepoint_shaps.append(shap_val[0])  # (20,)
-                all_timepoint_info.append({
-                    'patient_id': patient_idx,
-                    'time': target_time,
-                    'total_length': length
-                })
-
-    return shap_list, info_list
-
-
-
+    return shap_val[0], info
 
 # =======================
 # AKI Prediction Function
@@ -753,44 +748,107 @@ def run_prediction_AKI(selected_rows):
         flat_prob_dose = y_prob_dose[valid_indices]
         prediction_results[f'{percentage}%'] = flat_prob_dose[-1] * 100
 
+    # =========== 加入 SHAP 計算 =================
+    X_background_aki = get_aki_background_data()  # 你要先定義這個函數來載入背景資料
+    shap_list, info_list = compute_shap_current_timepoint_AKI(
+        X_test,
+        X_background_aki,
+        model
+    )
+    shap_values_last = shap_list[-1]
+    shap_info_last = info_list[-1]
+
+    return last_prob, prediction_results, dose_percentage, shap_values_last, shap_info_last
+
     
 
 # =======================
 # AKI SHAP Function
 # =======================
-# 背景資料
-X_background_AKI = get_aki_background_data()
-seq_len = 6  # 你的 LSTM 輸入長度
-
-# === predict_fn_AKI for SHAP ===
-def predict_fn_AKI (x_flat):
-    n = x_flat.shape[0]
-
-    if n < seq_len:
-        pad_size = seq_len - n
-        pad = -1 * np.ones((pad_size, x_flat.shape[1]))
-        x_flat = np.vstack([x_flat, pad])
-        n = seq_len
-    elif n % seq_len != 0:
-        n_full = (n // seq_len) * seq_len
-        remainder = n - n_full
-        x_main = x_flat[:n_full]
-        pad = -1 * np.ones((seq_len - remainder, x_flat.shape[1]))
-        x_flat = np.vstack([x_main, x_flat[n_full:], pad])
-        n = x_flat.shape[0]
-        
-    model = get_aki_model()
-    x_seq = x_flat.reshape(n // seq_len, seq_len, x_flat.shape[1])
-    y_seq = model.predict(x_seq, verbose=0)
-    y_flat = y_seq.reshape(-1, 1)
-    padding_mask = np.any(x_flat == -1, axis=1)
-    y_flat_valid = y_flat[~padding_mask]
-    return y_flat_valid
-
 # === 建立 explainer (只初始化一次) ===
 @st.cache_resource
-def get_AKI_explainer():
-    return shap.KernelExplainer(predict_fn_AKI, X_background_AKI)
+def compute_shap_current_timepoint_AKI(X_test, X_background, model, random_state=42):
+    """
+    僅針對最後一個有效樣本的最後有效時間點計算 SHAP 值。
+    ✅ 使用完整序列進行預測
+    ✅ Background 仍是完整序列，只在 predict_fn 內替換當前時間點
+    """
+
+    def valid_length(seq):
+        """計算序列有效長度 (排除 padding -1)。"""
+        return (seq != -1).all(axis=1).sum()
+
+    def group_by_length(X):
+        """根據有效時間長度分組。"""
+        groups = {}
+        for i, seq in enumerate(X):
+            vlen = valid_length(seq)
+            if vlen == 0:
+                continue
+            groups.setdefault(vlen, []).append(i)
+        return {k: np.array(v) for k, v in groups.items()}
+
+    # === 找出 X_test 中最後一個有效樣本 ===
+    valid_lens = np.array([valid_length(x) for x in X_test])
+    non_zero_idx = np.where(valid_lens > 0)[0]
+    if len(non_zero_idx) == 0:
+        raise ValueError("X_test 中沒有有效樣本！")
+
+    last_valid_idx = non_zero_idx[-1]
+    last_valid_len = valid_lens[last_valid_idx]
+    target_time = last_valid_len - 1
+
+    st.write(f"🧩 僅針對樣本 {last_valid_idx}（有效長度 {last_valid_len}）的最後時間點 t{target_time} 計算 SHAP")
+
+    # === 建立群組 ===
+    bg_groups = group_by_length(X_background)
+    if last_valid_len not in bg_groups:
+        raise ValueError(f"Background 中沒有長度 {last_valid_len} 的樣本。")
+
+    # === 隨機取 300 個 background ===
+    rng = np.random.default_rng(random_state)
+    bg_idx = bg_groups[last_valid_len]
+    if len(bg_idx) > 300:
+        bg_idx = rng.choice(bg_idx, size=300, replace=False)
+
+    # === 準備資料 ===
+    patient_seq_full = X_test[last_valid_idx]          # (6, 20)
+    bg_full = X_background[bg_idx]                     # (n_bg, 6, 20)
+    current_features = patient_seq_full[target_time]   # (20,)
+
+    # === 定義 predict_fn ===
+    def pred_fn_patient(X_current):
+        """
+        X_current: (batch, 20)
+        ✅ 用完整序列預測
+        ✅ 只替換當前時間點特徵
+        ✅ 返回該時間點預測機率
+        """
+        n = X_current.shape[0]
+        X_3d = np.tile(patient_seq_full, (n, 1, 1))  # (n, 6, 20)
+        X_3d[:, target_time, :] = X_current
+        preds = model.predict(X_3d, verbose=0)       # (n, 6, 1)
+        return preds[:, target_time, :]              # (n, 1)
+
+    # === 建立 explainer ===
+    # 注意：這裡 background 是「完整序列」，但 explainer 只需要當前時間點的特徵作為背景
+    # 所以要取出 bg_full 對應時間點的特徵
+    bg_current = bg_full[:, target_time, :]           # (n_bg, 20)
+    explainer = shap.KernelExplainer(pred_fn_patient, bg_current)
+
+    # === 計算 SHAP 值 ===
+    shap_val = explainer.shap_values(
+        current_features.reshape(1, -1),
+        nsamples=100
+    )
+
+    info = {
+        'patient_id': last_valid_idx,
+        'time': target_time,
+        'total_length': last_valid_len
+    }
+
+    return shap_val[0], info
 
 def get_aki_color(prob):
     if prob <= 62:
@@ -961,9 +1019,9 @@ elif mode == "Prediction mode":
 
                     # Run AKD
                     st.markdown("## 🧮 AKD Prediction")
-                    akd_prob, akd_results,dose_percentage_AKD, selected_shap_values_AKD= run_prediction_AKD(selected_rows)
+                    akd_prob, akd_results,dose_percentage_AKD, shap_values_AKD, shap_info_AKD= run_prediction_AKD(selected_rows)
                     st.markdown(f"### Predicted AKD Risk: <br> <span style='color:{get_akd_color(akd_prob)};font-weight:bold;'>{akd_prob:.4f}%</span> (dose at {dose_percentage_AKD}%)",unsafe_allow_html=True)
-                    st.markdown(selected_shap_values_AKD)
+                    st.markdown(shap_values_AKD)
                     st.markdown(f"### <span style='color:{get_akd_color(akd_prob)}; font-weight:bold;'>{get_akd_status(akd_prob)}</span>",unsafe_allow_html=True)
                     for k, v in akd_results.items():
                         st.info(f"{k} dose → Predicted AKD Risk: **{v:.4f}%**")
@@ -971,7 +1029,7 @@ elif mode == "Prediction mode":
 
                     # Run AKI
                     st.markdown("## 🧮 AKI Prediction")
-                    aki_prob, aki_results,dose_percentage_AKI, selected_shap_values_AKI = run_prediction_AKI(selected_rows)
+                    aki_prob, aki_results,dose_percentage_AKI, shap_values_AKI, shap_info_AKI = run_prediction_AKI(selected_rows)
                     st.markdown(f"### Predicted AKI Risk: <br> <span style='color:{get_aki_color(aki_prob)}; font-weight:bold;'>{aki_prob:.2f}%</span> (dose at {dose_percentage_AKI}%)",unsafe_allow_html=True)
                     st.markdown(f"### <span style='color:{get_aki_color(aki_prob)}; font-weight:bold;'>{get_aki_status(aki_prob)}</span>",unsafe_allow_html=True)
                     for k, v in aki_results.items():
