@@ -1001,6 +1001,7 @@ def plot_waterfall_single_patient_streamlit(shap_values, shap_data, feature_name
     
     # 在 Streamlit 顯示
     st.pyplot(fig)
+    return feature_vals_formatted
     
 elif mode == "Prediction mode":
     st.subheader("🔮 AKD & AKI prediction")    
