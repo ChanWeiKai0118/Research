@@ -549,7 +549,7 @@ def run_prediction_AKD(selected_rows):
         X_background_akd,
         model
     )
-    shap_values_last = shap_list[-1]
+    shap_values_last = shap_list
     shap_info_last = info_list
 
     return last_prob, prediction_results, dose_percentage, shap_values_last, shap_info_last
@@ -756,7 +756,7 @@ def run_prediction_AKI(selected_rows):
         X_background_aki,
         model
     )
-    shap_values_last = shap_list[-1]
+    shap_values_last = shap_list
     shap_info_last = info_list
 
     return last_prob, prediction_results, dose_percentage, shap_values_last, shap_info_last
