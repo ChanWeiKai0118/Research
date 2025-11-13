@@ -985,7 +985,23 @@ elif mode == "Check mode":
             st.warning("Please enter patient ID")
 # -----------------------------
 # 預測模式
-
+def plot_waterfall_single_patient_streamlit(shap_values, shap_data, feature_names, base_value=0):
+    # 原始特徵值
+    feature_vals = shap_data.values.astype(float)
+    feature_vals_formatted = np.round(feature_vals, 3)
+    # 建立 Explanation 物件
+    explanation = shap.Explanation(
+        values=shap_values,
+        base_values=base_value,
+        data=feature_vals_formatted,
+        feature_names=feature_names
+    )
+    fig, ax = plt.subplots(figsize=(10, 6))
+    shap.plots.waterfall(explanation, max_display=7)
+    
+    # 在 Streamlit 顯示
+    st.pyplot(fig)
+    
 elif mode == "Prediction mode":
     st.subheader("🔮 AKD & AKI prediction")    
     input_number = st.text_input("Enter Patient ID (Number):")
@@ -1048,21 +1064,12 @@ elif mode == "Prediction mode":
                     # ====SHAP individual waterfall plot=======
                     # 將 shap_values 轉成 np.array shape=(20,)
                     shap_vals = np.array(shap_values_AKD).flatten()
-                    
-                    # 將原始 feature 值轉成 np.array shape=(20,)
-                    feature_values = shap_data_AKD.values
-                    
-                    # 建立 shap.Explanation 物件
-                    expl = shap.Explanation(
-                        values=shap_vals,
-                        base_values=0,  # 如果是 logit 或百分比，可設定為模型基準值
-                        data=feature_values,
-                        feature_names=selected_features_AKD
+                    plot_waterfall_single_patient_streamlit(
+                    shap_vals,
+                    shap_data_AKD,
+                    feature_names=selected_features_AKD,
                     )
-                    
-                    # 5️⃣ 繪製 waterfall plot
-                    st.write("### SHAP Waterfall Plot")
-                    shap.plots.waterfall(ex, max_display=7) 
+
                     
                     st.markdown(f"### <span style='color:{get_akd_color(akd_prob)}; font-weight:bold;'>{get_akd_status(akd_prob)}</span>",unsafe_allow_html=True)
                     for k, v in akd_results.items():
