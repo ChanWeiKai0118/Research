@@ -172,7 +172,7 @@ def get_akd_background_preprocessed(random_state=42):
 # ============================================
 
 @st.cache_resource
-def compute_base_value_AKI(target_length, _model, n_background=250, random_state=42):
+def get_base_value_AKI(target_length, _model, n_background=250, random_state=42):
     """
     計算 AKI 模型在特定序列長度下的 base value
     
@@ -227,7 +227,7 @@ def compute_base_value_AKI(target_length, _model, n_background=250, random_state
 
 
 @st.cache_resource
-def compute_base_value_AKD(target_length, _model, n_background=250, random_state=42):
+def get_base_value_AKD(target_length, _model, n_background=250, random_state=42):
     """
     計算 AKD 模型在特定序列長度下的 base value
     """
