@@ -886,6 +886,25 @@ def get_akd_status(prob):
     else:
         return  "High risk of AKD, suggest intervention"
 
+def plot_waterfall_single_patient_streamlit(shap_values, shap_data, feature_names, base_value=0):
+    # 原始特徵值
+    feature_vals = shap_data.values.astype(float)
+    feature_vals_formatted = np.round(feature_vals, 3)
+    # 建立 Explanation 物件
+    explanation = shap.Explanation(
+        values=shap_values,
+        base_values=base_value,
+        data=feature_vals_formatted,
+        feature_names=feature_names
+    )
+    fig, ax = plt.subplots(figsize=(10, 6))
+    shap.plots.waterfall(explanation, max_display=7)
+    
+    # 在 Streamlit 顯示
+    st.pyplot(fig)
+    return None
+
+
 # === 第二個 Streamlit UI ===
 st.markdown(
     """
@@ -985,23 +1004,7 @@ elif mode == "Check mode":
             st.warning("Please enter patient ID")
 # -----------------------------
 # 預測模式
-def plot_waterfall_single_patient_streamlit(shap_values, shap_data, feature_names, base_value=0):
-    # 原始特徵值
-    feature_vals = shap_data.values.astype(float)
-    feature_vals_formatted = np.round(feature_vals, 3)
-    # 建立 Explanation 物件
-    explanation = shap.Explanation(
-        values=shap_values,
-        base_values=base_value,
-        data=feature_vals_formatted,
-        feature_names=feature_names
-    )
-    fig, ax = plt.subplots(figsize=(10, 6))
-    shap.plots.waterfall(explanation, max_display=7)
-    
-    # 在 Streamlit 顯示
-    st.pyplot(fig)
-    return feature_vals_formatted
+
     
 elif mode == "Prediction mode":
     st.subheader("🔮 AKD & AKI prediction")    
