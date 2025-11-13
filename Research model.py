@@ -172,19 +172,11 @@ def get_akd_background_preprocessed(random_state=42):
 # ============================================
 
 @st.cache_resource
-def get_base_value_AKI(target_length, _model, n_background=250, random_state=42):
+def get_base_value_AKI(target_length, _model, n_background=300, random_state=42):
     """
-    計算 AKI 模型在特定序列長度下的 base value
-    
-    Args:
-        target_length: 目標序列長度 (例如 6)
-        _model: 模型物件 (加底線避免被 hash)
-        n_background: 使用的背景樣本數量
-        random_state: 隨機種子
-    
-    Returns:
-        float: base_value (background 的平均預測風險)
+    計算 AKI 模型在特定序列長度下的 base value（自動快取）
     """
+    # 直接從快取的函數取得 background
     X_background, bg_groups = get_aki_background_preprocessed(random_state)
     
     if target_length not in bg_groups:
@@ -192,51 +184,6 @@ def get_base_value_AKI(target_length, _model, n_background=250, random_state=42)
         return 0.0
     
     # 隨機選擇 background 樣本
-    rng = np.random.default_rng(random_state)
-    bg_idx = bg_groups[target_length]
-    
-    if len(bg_idx) > n_background:
-        bg_idx = rng.choice(bg_idx, size=n_background, replace=False)
-    
-    bg_full = X_background[bg_idx]  # (n_bg, 6, 20)
-    target_time = target_length - 1
-    bg_current = bg_full[:, target_time, :]  # (n_bg, 20)
-    
-    # 定義預測函數（與 SHAP 使用的相同邏輯）
-    def pred_fn_background(X_current):
-        """用完整序列預測，只替換當前時間點"""
-        n = X_current.shape[0]
-        # 這裡用 bg_full 的第一個樣本作為模板（實際上每個背景樣本都自己預測）
-        X_3d_list = []
-        for i in range(n):
-            X_3d_single = bg_full[i].copy()
-            X_3d_single[target_time, :] = X_current[i]
-            X_3d_list.append(X_3d_single)
-        
-        X_3d = np.array(X_3d_list)  # (n, 6, 20)
-        preds = _model.predict(X_3d, verbose=0)  # (n, 6, 1)
-        return preds[:, target_time, :].flatten()  # (n,)
-    
-    # 計算 background 的預測值
-    bg_preds = pred_fn_background(bg_current)
-    base_value = float(np.mean(bg_preds))
-    
-    st.info(f"✅ AKI Base Value (長度={target_length}): {base_value:.4f} ({len(bg_idx)} 個樣本)")
-    
-    return base_value
-
-
-@st.cache_resource
-def get_base_value_AKD(target_length, _model, n_background=250, random_state=42):
-    """
-    計算 AKD 模型在特定序列長度下的 base value
-    """
-    X_background, bg_groups = get_akd_background_preprocessed(random_state)
-    
-    if target_length not in bg_groups:
-        st.warning(f"⚠️ Background 中沒有長度 {target_length} 的樣本，使用預設 base_value=0")
-        return 0.0
-    
     rng = np.random.default_rng(random_state)
     bg_idx = bg_groups[target_length]
     
@@ -262,7 +209,46 @@ def get_base_value_AKD(target_length, _model, n_background=250, random_state=42)
     bg_preds = pred_fn_background(bg_current)
     base_value = float(np.mean(bg_preds))
     
-    st.info(f"✅ AKD Base Value (長度={target_length}): {base_value:.4f} ({len(bg_idx)} 個樣本)")
+    return base_value
+
+
+@st.cache_resource
+def get_base_value_AKD(target_length, _model, n_background=300, random_state=42):
+    """
+    計算 AKD 模型在特定序列長度下的 base value（自動快取）
+    """
+    # 直接從快取的函數取得 background
+    X_background, bg_groups = get_akd_background_preprocessed(random_state)
+    
+    if target_length not in bg_groups:
+        st.warning(f"⚠️ Background 中沒有長度 {target_length} 的樣本，使用預設 base_value=0")
+        return 0.0
+    
+    # 隨機選擇 background 樣本
+    rng = np.random.default_rng(random_state)
+    bg_idx = bg_groups[target_length]
+    
+    if len(bg_idx) > n_background:
+        bg_idx = rng.choice(bg_idx, size=n_background, replace=False)
+    
+    bg_full = X_background[bg_idx]
+    target_time = target_length - 1
+    bg_current = bg_full[:, target_time, :]
+    
+    def pred_fn_background(X_current):
+        n = X_current.shape[0]
+        X_3d_list = []
+        for i in range(n):
+            X_3d_single = bg_full[i].copy()
+            X_3d_single[target_time, :] = X_current[i]
+            X_3d_list.append(X_3d_single)
+        
+        X_3d = np.array(X_3d_list)
+        preds = _model.predict(X_3d, verbose=0)
+        return preds[:, target_time, :].flatten()
+    
+    bg_preds = pred_fn_background(bg_current)
+    base_value = float(np.mean(bg_preds))
     
     return base_value
     
@@ -708,7 +694,6 @@ def run_prediction_AKD(selected_rows):
     base_value_akd = get_base_value_AKD(
         target_length=target_length,
         _model=model,
-        X_background=X_background_akd,  # 傳入已載入的 background
         n_background=300,
         random_state=42
     )
@@ -928,7 +913,6 @@ def run_prediction_AKI(selected_rows):
     base_value_aki = get_base_value_AKI(
         target_length=target_length,
         _model=model,
-        X_background=X_background_aki,  # 傳入已載入的 background
         n_background=300,
         random_state=42
     )
