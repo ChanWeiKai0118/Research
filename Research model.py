@@ -19,6 +19,7 @@ from keras.models import load_model
 from xgboost import XGBClassifier
 import shap
 import tensorflow as tf
+import matplotlib.pyplot as plt
 
 # Streamlit 版本
 # st.write("**Streamlit version:**", st.__version__)
