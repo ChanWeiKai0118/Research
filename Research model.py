@@ -1023,6 +1023,7 @@ elif mode == "Prediction mode":
                     akd_prob, akd_results,dose_percentage_AKD, shap_values_AKD, shap_info_AKD= run_prediction_AKD(selected_rows)
                     st.markdown(f"### Predicted AKD Risk: <br> <span style='color:{get_akd_color(akd_prob)};font-weight:bold;'>{akd_prob:.4f}%</span> (dose at {dose_percentage_AKD}%)",unsafe_allow_html=True)
                     st.markdown(shap_values_AKD)
+                    st.markdown(shap_info_AKD)
                     st.markdown(f"### <span style='color:{get_akd_color(akd_prob)}; font-weight:bold;'>{get_akd_status(akd_prob)}</span>",unsafe_allow_html=True)
                     for k, v in akd_results.items():
                         st.info(f"{k} dose → Predicted AKD Risk: **{v:.4f}%**")
