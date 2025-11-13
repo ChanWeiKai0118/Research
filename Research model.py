@@ -861,7 +861,7 @@ def get_akd_color(prob):
         return "green"   # Low risk of AKD
     elif prob < 75:
         return "orange"   # Indeterminate risk of AKD
-    else :
+    else:
         return "red"     # High risk of AKD
         
 def get_aki_status(prob):
@@ -875,7 +875,7 @@ def get_akd_status(prob):
         return "Low risk of AKD, suggest no intervention"
     elif prob < 75:
         return "Indeterminate risk of AKI, suggest observation"
-    else :
+    else:
         return  "High risk of AKD, suggest intervention"
 
 # === 第二個 Streamlit UI ===
