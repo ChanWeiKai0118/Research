@@ -641,40 +641,6 @@ def run_prediction_AKD(selected_rows):
     flat_prob = y_prob[valid_indices]
     last_prob = flat_prob[-1] * 100
 
-    
-    # ==============針對不同百分比劑量進行預測====================
-    dose_adjustments = [100, 90, 80, 70]
-    prediction_results = {}
-    for percentage in dose_adjustments:
-        input_data_modified = input_data.copy()
-        if dose_type == 'Cisplatin':
-            new_cis_dose = original_cis_dose / dose_percentage * percentage
-            input_data_modified.loc[last_row_index, 'cis_dose'] = new_cis_dose
-            prev = input_data_modified.loc[last_row_index - 1, 'cis_cum_dose'] if last_row_index > 0 else 0
-            input_data_modified.loc[last_row_index, 'cis_cum_dose'] = prev + new_cis_dose
-            cis_cycle = input_data_modified.loc[last_row_index, 'cis_cycle']
-            input_data_modified.loc[last_row_index, 'average_cis_cum_dose'] = input_data_modified.loc[last_row_index, 'cis_cum_dose'] / cis_cycle
-        elif dose_type == 'Carboplatin':
-            new_carb_dose = original_carb_dose / dose_percentage * percentage
-            input_data_modified.loc[last_row_index, 'carb_dose'] = new_carb_dose
-            prev = input_data_modified.loc[last_row_index - 1, 'carb_cum_dose'] if last_row_index > 0 else 0
-            input_data_modified.loc[last_row_index, 'carb_cum_dose'] = prev + new_carb_dose
-
-        input_data_modified_pred = input_data_modified.drop(columns=['carb_dose','dose_percentage','cis_cycle','cis_cum_dose'])
-        X_test_dose, y_test_dose = preprocessing(
-            data=input_data_modified_pred,
-            scaler=normalizer,
-            imputer=miceforest,
-            cols_for_preprocessing=cols_for_preprocessing,
-            groupby_col='id_no',
-            selected_features=selected_features,
-            outcome='akd',
-            maxlen=6
-        )
-        y_prob_dose = model.predict(X_test_dose).squeeze().flatten()
-        valid_indices = (y_test_dose != -1).astype(bool).flatten()
-        flat_prob_dose = y_prob_dose[valid_indices]
-        prediction_results[f'{percentage}%'] = flat_prob_dose[-1] * 100
 
 
     # =========== 加入 SHAP 計算 =================
@@ -701,7 +667,7 @@ def run_prediction_AKD(selected_rows):
     # 製作SHAP資料的原始數據
     shap_data = input_data_pred.drop(columns=["id_no","akd"]).iloc[-1]
     
-    return last_prob, prediction_results, dose_percentage, shap_values_last, shap_info_last, shap_data, base_value_akd
+    return last_prob, shap_values_last, shap_info_last, shap_data, base_value_akd
 
 
 # =======================
@@ -862,39 +828,7 @@ def run_prediction_AKI(selected_rows):
     flat_prob = y_prob[valid_indices]
     last_prob = flat_prob[-1] * 100
 
-    # 針對不同百分比劑量進行預測
-    dose_adjustments = [100, 90, 80, 70]
-    prediction_results = {}
-    for percentage in dose_adjustments:
-        input_data_modified = input_data.copy()
-        if dose_type == 'Cisplatin':
-            new_cis_dose = original_cis_dose / dose_percentage * percentage
-            input_data_modified.loc[last_row_index, 'cis_dose'] = new_cis_dose
-            prev = input_data_modified.loc[last_row_index - 1, 'cis_cum_dose'] if last_row_index > 0 else 0
-            input_data_modified.loc[last_row_index, 'cis_cum_dose'] = prev + new_cis_dose
-            cis_cycle = input_data_modified.loc[last_row_index, 'cis_cycle']
-            input_data_modified.loc[last_row_index, 'average_cis_cum_dose'] = input_data_modified.loc[last_row_index, 'cis_cum_dose'] / cis_cycle
-        elif dose_type == 'Carboplatin':
-            new_carb_dose = original_carb_dose / dose_percentage * percentage
-            input_data_modified.loc[last_row_index, 'carb_dose'] = new_carb_dose
-            prev = input_data_modified.loc[last_row_index - 1, 'carb_cum_dose'] if last_row_index > 0 else 0
-            input_data_modified.loc[last_row_index, 'carb_cum_dose'] = prev + new_carb_dose
-
-        input_data_modified_pred = input_data_modified.drop(columns=['carb_dose','dose_percentage','cis_cycle'])
-        X_test_dose, y_test_dose = preprocessing(
-            data=input_data_modified_pred,
-            scaler=normalizer,
-            imputer=miceforest,
-            cols_for_preprocessing=cols_for_preprocessing,
-            groupby_col='id_no',
-            selected_features=selected_features,
-            outcome='aki',
-            maxlen=6
-        )
-        y_prob_dose = model.predict(X_test_dose).squeeze().flatten()
-        valid_indices = (y_test_dose != -1).astype(bool).flatten()
-        flat_prob_dose = y_prob_dose[valid_indices]
-        prediction_results[f'{percentage}%'] = flat_prob_dose[-1] * 100
+    
 
     # =========== 加入 SHAP 計算 =================
     X_background_aki = get_aki_background_data()
@@ -920,7 +854,7 @@ def run_prediction_AKI(selected_rows):
     # 製作 SHAP 資料的原始數據
     shap_data = input_data_pred.drop(columns=["id_no", "aki"]).iloc[-1]
     
-    return last_prob, prediction_results, dose_percentage, shap_values_last, shap_info_last, shap_data, base_value_aki  
+    return last_prob, shap_values_last, shap_info_last, shap_data, base_value_aki  
 
     
 
@@ -1214,8 +1148,8 @@ elif mode == "Prediction mode":
 
                     # ========Run AKD==============
                     st.markdown("## 🧮 AKD Prediction")
-                    akd_prob, akd_results,dose_percentage_AKD, shap_values_AKD, shap_info_AKD, shap_data_AKD, base_value_AKD= run_prediction_AKD(selected_rows)
-                    st.markdown(f"### Predicted AKD Risk: <br> <span style='color:{get_akd_color(akd_prob)};font-weight:bold;'>{akd_prob:.4f}%</span> (dose at {dose_percentage_AKD}%)",unsafe_allow_html=True)
+                    akd_prob, shap_values_AKD, shap_info_AKD, shap_data_AKD, base_value_AKD= run_prediction_AKD(selected_rows)
+                    st.markdown(f"### Predicted AKD Risk: <br> <span style='color:{get_akd_color(akd_prob)};font-weight:bold;'>{akd_prob:.4f}%</span> ",unsafe_allow_html=True)
                     st.markdown(f"### <span style='color:{get_akd_color(akd_prob)}; font-weight:bold;'>{get_akd_status(akd_prob)}</span>",unsafe_allow_html=True)
                     
                     # ----SHAP individual waterfall plot----
@@ -1228,14 +1162,12 @@ elif mode == "Prediction mode":
                     base_value=base_value_AKD
                     )
                     
-                    for k, v in akd_results.items():
-                        st.info(f"{k} dose → Predicted AKD Risk: **{v:.4f}%**")
-
+                    
 
                     # =========Run AKI==============
                     st.markdown("## 🧮 AKI Prediction")
-                    aki_prob, aki_results,dose_percentage_AKI, shap_values_AKI, shap_info_AKI, shap_data_AKI, base_value_AKI = run_prediction_AKI(selected_rows)
-                    st.markdown(f"### Predicted AKI Risk: <br> <span style='color:{get_aki_color(aki_prob)}; font-weight:bold;'>{aki_prob:.2f}%</span> (dose at {dose_percentage_AKI}%)",unsafe_allow_html=True)
+                    aki_prob, shap_values_AKI, shap_info_AKI, shap_data_AKI, base_value_AKI = run_prediction_AKI(selected_rows)
+                    st.markdown(f"### Predicted AKI Risk: <br> <span style='color:{get_aki_color(aki_prob)}; font-weight:bold;'>{aki_prob:.2f}%</span> ",unsafe_allow_html=True)
                     st.markdown(f"### <span style='color:{get_aki_color(aki_prob)}; font-weight:bold;'>{get_aki_status(aki_prob)}</span>",unsafe_allow_html=True)
                     
                     # ----SHAP individual waterfall plot----
@@ -1248,8 +1180,7 @@ elif mode == "Prediction mode":
                     base_value=base_value_AKI
                     )
 
-                    for k, v in aki_results.items():
-                        st.info(f"{k} dose → Predicted AKI Risk: **{v:.2f}%**")
+
 
             except Exception as e:
                 import traceback
