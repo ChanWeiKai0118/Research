@@ -333,7 +333,7 @@ def save_to_gsheet(data, sheet_name):
         else:
             row[6], row[7] = 0, data[5]
     
-        row[10], row[13] = data[6], data[7]
+        row[9], row[12] = data[6], data[7]
         
         # 抓之前的資料
         all_rows = sheet.get_all_values() 
@@ -342,69 +342,69 @@ def save_to_gsheet(data, sheet_name):
         row[0] = f'=IF(ROW()=2, 1, IF(COUNTIF(B$2:B{last_row-1}, B{last_row}) = 0, MAX(A$2:A{last_row-1}) + 1, IF(OR(H{last_row}<INDEX(H$2:H{last_row-1}, MAX(IF($B$2:B{last_row-1}=B{last_row}, ROW($B$2:B{last_row-1})-1, 0))),G{last_row}<INDEX(G$2:G{last_row-1}, MAX(IF($B$2:B{last_row-1}=B{last_row}, ROW($B$2:B{last_row-1})-1, 0))),F{last_row} - INDEX(F$2:F{last_row-1}, MAX(IF($B$2:B{last_row-1} = B{last_row}, ROW($B$2:B{last_row-1}) - 1, 0))) > 42), MAX(A$2:A{last_row-1}) + 1, INDEX(A$2:A{last_row-1}, MAX(IF(B$2:B{last_row-1}=B{last_row}, ROW($B$2:B{last_row-1})-1, 0))))))'
     
         row[8] = f'=IF(COUNTIF(A$2:A{last_row}, A{last_row}) = 1, 0, (F{last_row} - INDEX(F$2:F{last_row}, MATCH(A{last_row}, A$2:A{last_row}, 0)))/7)'
-        #row[9] = data[6]
         
-        row[11] = f'=SUMIF(A$2:A{last_row}, A{last_row}, K$2:K{last_row})'
-        row[12] = f'=IF(OR(G{last_row}=0, L{last_row}=0), 0, L{last_row} / G{last_row})'
-        row[14] = f'=SUMIF(A$2:A{last_row}, A{last_row}, N$2:N{last_row})'
-        row[15] = f'=IF(OR(H{last_row}=0, O{last_row}=0), 0, O{last_row} / H{last_row})'
-        row[16] = f'=IF(MATCH(A{last_row}, A$2:A{last_row}, 0) = ROW()-1,IF(R{last_row} <> "", R{last_row},IFNA(INDEX(lab_data!H:H,MATCH(1,(lab_data!A:A = B{last_row}) *(lab_data!E:E = MAX(FILTER(lab_data!E:E,(lab_data!A:A = B{last_row}) *(lab_data!E:E <= F{last_row}) *(lab_data!E:E >= F{last_row} - 30) *(lab_data!H:H <> "")))),0)), "")),INDEX(Q$2:Q{last_row-1}, MATCH(A{last_row}, A$2:A{last_row-1}, 0)))'
-        row[17] = f'=IFNA(INDEX(lab_data!H:H, MATCH(1, (lab_data!A:A = B{last_row}) * (lab_data!E:E = MAX(FILTER(lab_data!E:E, (lab_data!A:A = B{last_row}) * (lab_data!E:E <= F{last_row}) * (lab_data!E:E >= F{last_row} - 30) * (lab_data!H:H <> "")))) * (lab_data!H:H <> ""), 0)), "")'
-        row[18] = f'=IF(OR(Q{last_row}="",T{last_row}=""),"",IF(T{last_row}=0,0,T{last_row}/DATEVALUE(INDEX(lab_data!$E:$E,MATCH(1,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E=MAX(FILTER(lab_data!$E:$E,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})*(lab_data!H:H<>""))))*(lab_data!H:H<>""),0))-XLOOKUP(Q{last_row},FILTER(lab_data!H:H,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})),FILTER(lab_data!$E:$E,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})),"Not found"))))'
-        row[19] = f'=IF(R{last_row}="", "", R{last_row} - Q{last_row})'
-        row[20] = f'=IF(MATCH(A{last_row}, A$2:A{last_row}, 0) = ROW()-1,IF(V{last_row} <> "", V{last_row},IFNA(INDEX(lab_data!J:J,MATCH(1,(lab_data!A:A = B{last_row}) *(lab_data!E:E = MAX(FILTER(lab_data!E:E,(lab_data!A:A = B{last_row}) *(lab_data!E:E <= F{last_row}) *(lab_data!E:E >= F{last_row} - 30) *(lab_data!J:J <> "")))),0)), "")),INDEX(U$2:U{last_row-1}, MATCH(A{last_row}, A$2:A{last_row-1}, 0)))'
-        row[21] = f'=IFNA(INDEX(lab_data!J:J, MATCH(1, (lab_data!A:A = B{last_row}) * (lab_data!E:E = MAX(FILTER(lab_data!E:E, (lab_data!A:A = B{last_row}) * (lab_data!E:E <= F{last_row}) * (lab_data!E:E >= F{last_row} - 30) * (lab_data!J:J <> "")))) * (lab_data!J:J <> ""), 0)), "")'
-        row[22] = f'=IF(OR(U{last_row}="",X{last_row}=""),"",IF(X{last_row}=0,0,X{last_row}/DATEVALUE(INDEX(lab_data!$E:$E,MATCH(1,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E=MAX(FILTER(lab_data!$E:$E,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})*(lab_data!J:J<>""))))*(lab_data!J:J<>""),0))-XLOOKUP(U{last_row},FILTER(lab_data!J:J,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})),FILTER(lab_data!$E:$E,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})),"Not found"))))'
-        row[23] = f'=IF(V{last_row}="", "", V{last_row} - U{last_row})'
-        row[24] = f'=IF(MATCH(A{last_row}, A$2:A{last_row}, 0) = ROW()-1,IF(Z{last_row} <> "", Z{last_row},IFNA(INDEX(lab_data!K:K,MATCH(1,(lab_data!A:A = B{last_row}) *(lab_data!E:E = MAX(FILTER(lab_data!E:E,(lab_data!A:A = B{last_row}) *(lab_data!E:E <= F{last_row}) *(lab_data!E:E >= F{last_row} - 30) *(lab_data!K:K <> "")))),0)), "")),INDEX(Y$2:Y{last_row-1}, MATCH(A{last_row}, A$2:A{last_row-1}, 0)))'
-        row[25] = f'=IFNA(INDEX(lab_data!K:K, MATCH(1, (lab_data!A:A = B{last_row}) * (lab_data!E:E = MAX(FILTER(lab_data!E:E, (lab_data!A:A = B{last_row}) * (lab_data!E:E <= F{last_row}) * (lab_data!E:E >= F{last_row} - 30) * (lab_data!K:K <> "")))) * (lab_data!K:K <> ""), 0)), "")'
-        row[26] = f'=IF(OR(Y{last_row}="",AB{last_row}=""),"",IF(AB{last_row}=0,0,AB{last_row}/DATEVALUE(INDEX(lab_data!$E:$E,MATCH(1,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E=MAX(FILTER(lab_data!$E:$E,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})*(lab_data!K:K<>""))))*(lab_data!K:K<>""),0))-XLOOKUP(Y{last_row},FILTER(lab_data!K:K,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})),FILTER(lab_data!$E:$E,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})),"Not found"))))'
-        row[27] = f'=IF(Z{last_row}="", "", Z{last_row} - Y{last_row})'
-        row[28] = f'=IF(MATCH(A{last_row}, A$2:A{last_row}, 0) = ROW()-1,IF(AD{last_row} <> "", AD{last_row},IFNA(INDEX(lab_data!G:G,MATCH(1,(lab_data!A:A = B{last_row}) *(lab_data!E:E = MAX(FILTER(lab_data!E:E,(lab_data!A:A = B{last_row}) *(lab_data!E:E <= F{last_row}) *(lab_data!E:E >= F{last_row} - 30) *(lab_data!G:G <> "")))),0)), "")),INDEX(AC$2:AC{last_row-1}, MATCH(A{last_row}, A$2:A{last_row-1}, 0)))'
-        row[29] = f'=IFNA(INDEX(lab_data!G:G, MATCH(1, (lab_data!A:A = B{last_row}) * (lab_data!E:E = MAX(FILTER(lab_data!E:E, (lab_data!A:A = B{last_row}) * (lab_data!E:E <= F{last_row}) * (lab_data!E:E >= F{last_row} - 30) * (lab_data!G:G <> "")))) * (lab_data!G:G <> ""), 0)), "")'
-        row[30] = f'=IF(OR(AC{last_row}="",AF{last_row}=""),"",IF(AF{last_row}=0,0,AF{last_row}/DATEVALUE(INDEX(lab_data!$E:$E,MATCH(1,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E=MAX(FILTER(lab_data!$E:$E,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})*(lab_data!G:G<>""))))*(lab_data!G:G<>""),0))-XLOOKUP(AC{last_row},FILTER(lab_data!G:G,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})),FILTER(lab_data!$E:$E,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})),"Not found"))))'
-        row[31] = f'=IF(AD{last_row}="", "", AD{last_row} - AC{last_row})'
-        row[32] = f'=IF(MATCH(A{last_row}, A$2:A{last_row}, 0) = ROW()-1,IF(AH{last_row} <> "", AH{last_row},IFNA(INDEX(lab_data!I:I,MATCH(1,(lab_data!A:A = B{last_row}) *(lab_data!E:E = MAX(FILTER(lab_data!E:E,(lab_data!A:A = B{last_row}) *(lab_data!E:E <= F{last_row}) *(lab_data!E:E >= F{last_row} - 30) *(lab_data!I:I <> "")))),0)), "")),INDEX(AG$2:AG{last_row-1}, MATCH(A{last_row}, A$2:A{last_row-1}, 0)))'
-        row[33] = f'=IFNA(INDEX(lab_data!I:I, MATCH(1, (lab_data!A:A = B{last_row}) * (lab_data!E:E = MAX(FILTER(lab_data!E:E, (lab_data!A:A = B{last_row}) * (lab_data!E:E <= F{last_row}) * (lab_data!E:E >= F{last_row} - 30) * (lab_data!I:I <> "")))) * (lab_data!I:I <> ""), 0)), "")'
-        row[34] = f'=IF(OR(AG{last_row}="",AJ{last_row}=""),"",IF(AJ{last_row}=0,0,AJ{last_row}/DATEVALUE(INDEX(lab_data!$E:$E,MATCH(1,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E=MAX(FILTER(lab_data!$E:$E,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})*(lab_data!I:I<>""))))*(lab_data!I:I<>""),0))-XLOOKUP(AG{last_row},FILTER(lab_data!I:I,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})),FILTER(lab_data!$E:$E,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})),"Not found"))))'
-        row[35] = f'=IF(AH{last_row}="", "", AH{last_row} - AG{last_row})'
-        row[36] = f'=IF(MATCH(A{last_row}, A$2:A{last_row}, 0) = ROW()-1,IF(AL{last_row} <> "", AL{last_row},IFNA(INDEX(lab_data!L:L,MATCH(1,(lab_data!A:A = B{last_row}) *(lab_data!E:E = MAX(FILTER(lab_data!E:E,(lab_data!A:A = B{last_row}) *(lab_data!E:E <= F{last_row}) *(lab_data!E:E >= F{last_row} - 30) *(lab_data!L:L <> "")))),0)), "")),INDEX(AK$2:AK{last_row-1}, MATCH(A{last_row}, A$2:A{last_row-1}, 0)))'
-        row[37] = f'=IFNA(INDEX(lab_data!L:L, MATCH(1, (lab_data!A:A = B{last_row}) * (lab_data!E:E = MAX(FILTER(lab_data!E:E, (lab_data!A:A = B{last_row}) * (lab_data!E:E <= F{last_row}) * (lab_data!E:E >= F{last_row} - 30) * (lab_data!L:L <> "")))) * (lab_data!L:L <> ""), 0)), "")'
-        row[38] = f'=IF(OR(AK{last_row}="",AN{last_row}=""),"",IF(AN{last_row}=0,0,AN{last_row}/DATEVALUE(INDEX(lab_data!$E:$E,MATCH(1,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E=MAX(FILTER(lab_data!$E:$E,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})*(lab_data!L:L<>""))))*(lab_data!L:L<>""),0))-XLOOKUP(AK{last_row},FILTER(lab_data!L:L,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})),FILTER(lab_data!$E:$E,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})),"Not found"))))'
-        row[39] = f'=IF(AL{last_row}="", "", AL{last_row} - AK{last_row})'
-        row[40] = f'=IF(MATCH(A{last_row}, A$2:A{last_row}, 0) = ROW()-1,IF(AP{last_row} <> "", AP{last_row},IFNA(INDEX(lab_data!M:M,MATCH(1,(lab_data!A:A = B{last_row}) *(lab_data!E:E = MAX(FILTER(lab_data!E:E,(lab_data!A:A = B{last_row}) *(lab_data!E:E <= F{last_row}) *(lab_data!E:E >= F{last_row} - 30) *(lab_data!M:M <> "")))),0)), "")),INDEX(AO$2:AO{last_row-1}, MATCH(A{last_row}, A$2:A{last_row-1}, 0)))'
-        row[41] = f'=IFNA(INDEX(lab_data!M:M, MATCH(1, (lab_data!A:A = B{last_row}) * (lab_data!E:E = MAX(FILTER(lab_data!E:E, (lab_data!A:A = B{last_row}) * (lab_data!E:E <= F{last_row}) * (lab_data!E:E >= F{last_row} - 30) * (lab_data!M:M <> "")))) * (lab_data!M:M <> ""), 0)), "")'
-        row[42] = f'=IF(OR(AO{last_row}="",AR{last_row}=""),"",IF(AR{last_row}=0,0,AR{last_row}/DATEVALUE(INDEX(lab_data!$E:$E,MATCH(1,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E=MAX(FILTER(lab_data!$E:$E,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})*(lab_data!M:M<>""))))*(lab_data!M:M<>""),0))-XLOOKUP(AO{last_row},FILTER(lab_data!M:M,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})),FILTER(lab_data!$E:$E,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})),"Not found"))))'
-        row[43] = f'=IF(AP{last_row}="", "", AP{last_row} - AO{last_row})'
-        row[44] = f'=IF(MATCH(A{last_row}, A$2:A{last_row}, 0) = ROW()-1,IF(AT{last_row} <> "", AT{last_row},IFNA(INDEX(lab_data!N:N,MATCH(1,(lab_data!A:A = B{last_row}) *(lab_data!E:E = MAX(FILTER(lab_data!E:E,(lab_data!A:A = B{last_row}) *(lab_data!E:E <= F{last_row}) *(lab_data!E:E >= F{last_row} - 30) *(lab_data!N:N <> "")))),0)), "")),INDEX(AS$2:AS{last_row-1}, MATCH(A{last_row}, A$2:A{last_row-1}, 0)))'
-        row[45] = f'=IFNA(INDEX(lab_data!N:N, MATCH(1, (lab_data!A:A = B{last_row}) * (lab_data!E:E = MAX(FILTER(lab_data!E:E, (lab_data!A:A = B{last_row}) * (lab_data!E:E <= F{last_row}) * (lab_data!E:E >= F{last_row} - 30) * (lab_data!N:N <> "")))) * (lab_data!N:N <> ""), 0)), "")'
-        row[46] = f'=IF(OR(AS{last_row}="",AV{last_row}=""),"",IF(AV{last_row}=0,0,AV{last_row}/DATEVALUE(INDEX(lab_data!$E:$E,MATCH(1,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E=MAX(FILTER(lab_data!$E:$E,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})*(lab_data!N:N<>""))))*(lab_data!N:N<>""),0))-XLOOKUP(AS{last_row},FILTER(lab_data!N:N,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})),FILTER(lab_data!$E:$E,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})),"Not found"))))'
-        row[47] = f'=IF(AT{last_row}="", "", AT{last_row} - AS{last_row})'
+        
+        row[10] = f'=SUMIF(A$2:A{last_row}, A{last_row}, J$2:J{last_row})'
+        row[11] = f'=IF(OR(G{last_row}=0, K{last_row}=0), 0, K{last_row} / G{last_row})'
+        row[13] = f'=SUMIF(A$2:A{last_row}, A{last_row}, M$2:M{last_row})'
+        row[14] = f'=IF(OR(H{last_row}=0, N{last_row}=0), 0, N{last_row} / H{last_row})'
+        row[15] = f'=IF(MATCH(A{last_row}, A$2:A{last_row}, 0) = ROW()-1,IF(Q{last_row} <> "", Q{last_row},IFNA(INDEX(lab_data!H:H,MATCH(1,(lab_data!A:A = B{last_row}) *(lab_data!E:E = MAX(FILTER(lab_data!E:E,(lab_data!A:A = B{last_row}) *(lab_data!E:E <= F{last_row}) *(lab_data!E:E >= F{last_row} - 30) *(lab_data!H:H <> "")))),0)), "")),INDEX(P$2:P{last_row-1}, MATCH(A{last_row}, A$2:A{last_row-1}, 0)))'
+        row[16] = f'=IFNA(INDEX(lab_data!H:H, MATCH(1, (lab_data!A:A = B{last_row}) * (lab_data!E:E = MAX(FILTER(lab_data!E:E, (lab_data!A:A = B{last_row}) * (lab_data!E:E <= F{last_row}) * (lab_data!E:E >= F{last_row} - 30) * (lab_data!H:H <> "")))) * (lab_data!H:H <> ""), 0)), "")'
+        row[17] = f'=IF(OR(P{last_row}="",S{last_row}=""),"",IF(S{last_row}=0,0,S{last_row}/DATEVALUE(INDEX(lab_data!$E:$E,MATCH(1,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E=MAX(FILTER(lab_data!$E:$E,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})*(lab_data!H:H<>""))))*(lab_data!H:H<>""),0))-XLOOKUP(P{last_row},FILTER(lab_data!H:H,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})),FILTER(lab_data!$E:$E,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})),"Not found"))))'
+        row[18] = f'=IF(Q{last_row}="", "", Q{last_row} - P{last_row})'
+        row[19] = f'=IF(MATCH(A{last_row}, A$2:A{last_row}, 0) = ROW()-1,IF(U{last_row} <> "", U{last_row},IFNA(INDEX(lab_data!J:J,MATCH(1,(lab_data!A:A = B{last_row}) *(lab_data!E:E = MAX(FILTER(lab_data!E:E,(lab_data!A:A = B{last_row}) *(lab_data!E:E <= F{last_row}) *(lab_data!E:E >= F{last_row} - 30) *(lab_data!J:J <> "")))),0)), "")),INDEX(T$2:T{last_row-1}, MATCH(A{last_row}, A$2:A{last_row-1}, 0)))'
+        row[20] = f'=IFNA(INDEX(lab_data!J:J, MATCH(1, (lab_data!A:A = B{last_row}) * (lab_data!E:E = MAX(FILTER(lab_data!E:E, (lab_data!A:A = B{last_row}) * (lab_data!E:E <= F{last_row}) * (lab_data!E:E >= F{last_row} - 30) * (lab_data!J:J <> "")))) * (lab_data!J:J <> ""), 0)), "")'
+        row[21] = f'=IF(OR(T{last_row}="",W{last_row}=""),"",IF(W{last_row}=0,0,W{last_row}/DATEVALUE(INDEX(lab_data!$E:$E,MATCH(1,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E=MAX(FILTER(lab_data!$E:$E,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})*(lab_data!J:J<>""))))*(lab_data!J:J<>""),0))-XLOOKUP(T{last_row},FILTER(lab_data!J:J,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})),FILTER(lab_data!$E:$E,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})),"Not found"))))'
+        row[22] = f'=IF(U{last_row}="", "", U{last_row} - T{last_row})'
+        row[23] = f'=IF(MATCH(A{last_row}, A$2:A{last_row}, 0) = ROW()-1,IF(Y{last_row} <> "", Y{last_row},IFNA(INDEX(lab_data!K:K,MATCH(1,(lab_data!A:A = B{last_row}) *(lab_data!E:E = MAX(FILTER(lab_data!E:E,(lab_data!A:A = B{last_row}) *(lab_data!E:E <= F{last_row}) *(lab_data!E:E >= F{last_row} - 30) *(lab_data!K:K <> "")))),0)), "")),INDEX(X$2:X{last_row-1}, MATCH(A{last_row}, A$2:A{last_row-1}, 0)))'
+        row[24] = f'=IFNA(INDEX(lab_data!K:K, MATCH(1, (lab_data!A:A = B{last_row}) * (lab_data!E:E = MAX(FILTER(lab_data!E:E, (lab_data!A:A = B{last_row}) * (lab_data!E:E <= F{last_row}) * (lab_data!E:E >= F{last_row} - 30) * (lab_data!K:K <> "")))) * (lab_data!K:K <> ""), 0)), "")'
+        row[25] = f'=IF(OR(X{last_row}="",AA{last_row}=""),"",IF(AA{last_row}=0,0,AA{last_row}/DATEVALUE(INDEX(lab_data!$E:$E,MATCH(1,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E=MAX(FILTER(lab_data!$E:$E,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})*(lab_data!K:K<>""))))*(lab_data!K:K<>""),0))-XLOOKUP(X{last_row},FILTER(lab_data!K:K,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})),FILTER(lab_data!$E:$E,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})),"Not found"))))'
+        row[26] = f'=IF(Y{last_row}="", "", Y{last_row} - X{last_row})'
+        row[27] = f'=IF(MATCH(A{last_row}, A$2:A{last_row}, 0) = ROW()-1,IF(AC{last_row} <> "", AC{last_row},IFNA(INDEX(lab_data!G:G,MATCH(1,(lab_data!A:A = B{last_row}) *(lab_data!E:E = MAX(FILTER(lab_data!E:E,(lab_data!A:A = B{last_row}) *(lab_data!E:E <= F{last_row}) *(lab_data!E:E >= F{last_row} - 30) *(lab_data!G:G <> "")))),0)), "")),INDEX(AB$2:AB{last_row-1}, MATCH(A{last_row}, A$2:A{last_row-1}, 0)))'
+        row[28] = f'=IFNA(INDEX(lab_data!G:G, MATCH(1, (lab_data!A:A = B{last_row}) * (lab_data!E:E = MAX(FILTER(lab_data!E:E, (lab_data!A:A = B{last_row}) * (lab_data!E:E <= F{last_row}) * (lab_data!E:E >= F{last_row} - 30) * (lab_data!G:G <> "")))) * (lab_data!G:G <> ""), 0)), "")'
+        row[29] = f'=IF(OR(AB{last_row}="",AE{last_row}=""),"",IF(AE{last_row}=0,0,AE{last_row}/DATEVALUE(INDEX(lab_data!$E:$E,MATCH(1,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E=MAX(FILTER(lab_data!$E:$E,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})*(lab_data!G:G<>""))))*(lab_data!G:G<>""),0))-XLOOKUP(AB{last_row},FILTER(lab_data!G:G,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})),FILTER(lab_data!$E:$E,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})),"Not found"))))'
+        row[30] = f'=IF(AC{last_row}="", "", AC{last_row} - AB{last_row})'
+        row[31] = f'=IF(MATCH(A{last_row}, A$2:A{last_row}, 0) = ROW()-1,IF(AG{last_row} <> "", AG{last_row},IFNA(INDEX(lab_data!I:I,MATCH(1,(lab_data!A:A = B{last_row}) *(lab_data!E:E = MAX(FILTER(lab_data!E:E,(lab_data!A:A = B{last_row}) *(lab_data!E:E <= F{last_row}) *(lab_data!E:E >= F{last_row} - 30) *(lab_data!I:I <> "")))),0)), "")),INDEX(AF$2:AF{last_row-1}, MATCH(A{last_row}, A$2:A{last_row-1}, 0)))'
+        row[32] = f'=IFNA(INDEX(lab_data!I:I, MATCH(1, (lab_data!A:A = B{last_row}) * (lab_data!E:E = MAX(FILTER(lab_data!E:E, (lab_data!A:A = B{last_row}) * (lab_data!E:E <= F{last_row}) * (lab_data!E:E >= F{last_row} - 30) * (lab_data!I:I <> "")))) * (lab_data!I:I <> ""), 0)), "")'
+        row[33] = f'=IF(OR(AF{last_row}="",AI{last_row}=""),"",IF(AI{last_row}=0,0,AI{last_row}/DATEVALUE(INDEX(lab_data!$E:$E,MATCH(1,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E=MAX(FILTER(lab_data!$E:$E,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})*(lab_data!I:I<>""))))*(lab_data!I:I<>""),0))-XLOOKUP(AF{last_row},FILTER(lab_data!I:I,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})),FILTER(lab_data!$E:$E,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})),"Not found"))))'
+        row[34] = f'=IF(AG{last_row}="", "", AG{last_row} - AF{last_row})'
+        row[35] = f'=IF(MATCH(A{last_row}, A$2:A{last_row}, 0) = ROW()-1,IF(AK{last_row} <> "", AK{last_row},IFNA(INDEX(lab_data!L:L,MATCH(1,(lab_data!A:A = B{last_row}) *(lab_data!E:E = MAX(FILTER(lab_data!E:E,(lab_data!A:A = B{last_row}) *(lab_data!E:E <= F{last_row}) *(lab_data!E:E >= F{last_row} - 30) *(lab_data!L:L <> "")))),0)), "")),INDEX(AJ$2:AJ{last_row-1}, MATCH(A{last_row}, A$2:A{last_row-1}, 0)))'
+        row[36] = f'=IFNA(INDEX(lab_data!L:L, MATCH(1, (lab_data!A:A = B{last_row}) * (lab_data!E:E = MAX(FILTER(lab_data!E:E, (lab_data!A:A = B{last_row}) * (lab_data!E:E <= F{last_row}) * (lab_data!E:E >= F{last_row} - 30) * (lab_data!L:L <> "")))) * (lab_data!L:L <> ""), 0)), "")'
+        row[37] = f'=IF(OR(AJ{last_row}="",AM{last_row}=""),"",IF(AM{last_row}=0,0,AM{last_row}/DATEVALUE(INDEX(lab_data!$E:$E,MATCH(1,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E=MAX(FILTER(lab_data!$E:$E,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})*(lab_data!L:L<>""))))*(lab_data!L:L<>""),0))-XLOOKUP(AJ{last_row},FILTER(lab_data!L:L,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})),FILTER(lab_data!$E:$E,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})),"Not found"))))'
+        row[38] = f'=IF(AK{last_row}="", "", AK{last_row} - AJ{last_row})'
+        row[39] = f'=IF(MATCH(A{last_row}, A$2:A{last_row}, 0) = ROW()-1,IF(AO{last_row} <> "", AO{last_row},IFNA(INDEX(lab_data!M:M,MATCH(1,(lab_data!A:A = B{last_row}) *(lab_data!E:E = MAX(FILTER(lab_data!E:E,(lab_data!A:A = B{last_row}) *(lab_data!E:E <= F{last_row}) *(lab_data!E:E >= F{last_row} - 30) *(lab_data!M:M <> "")))),0)), "")),INDEX(AN$2:AN{last_row-1}, MATCH(A{last_row}, A$2:A{last_row-1}, 0)))'
+        row[40] = f'=IFNA(INDEX(lab_data!M:M, MATCH(1, (lab_data!A:A = B{last_row}) * (lab_data!E:E = MAX(FILTER(lab_data!E:E, (lab_data!A:A = B{last_row}) * (lab_data!E:E <= F{last_row}) * (lab_data!E:E >= F{last_row} - 30) * (lab_data!M:M <> "")))) * (lab_data!M:M <> ""), 0)), "")'
+        row[41] = f'=IF(OR(AN{last_row}="",AQ{last_row}=""),"",IF(AQ{last_row}=0,0,AQ{last_row}/DATEVALUE(INDEX(lab_data!$E:$E,MATCH(1,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E=MAX(FILTER(lab_data!$E:$E,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})*(lab_data!M:M<>""))))*(lab_data!M:M<>""),0))-XLOOKUP(AN{last_row},FILTER(lab_data!M:M,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})),FILTER(lab_data!$E:$E,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})),"Not found"))))'
+        row[42] = f'=IF(AO{last_row}="", "", AO{last_row} - AN{last_row})'
+        row[43] = f'=IF(MATCH(A{last_row}, A$2:A{last_row}, 0) = ROW()-1,IF(AS{last_row} <> "", AS{last_row},IFNA(INDEX(lab_data!N:N,MATCH(1,(lab_data!A:A = B{last_row}) *(lab_data!E:E = MAX(FILTER(lab_data!E:E,(lab_data!A:A = B{last_row}) *(lab_data!E:E <= F{last_row}) *(lab_data!E:E >= F{last_row} - 30) *(lab_data!N:N <> "")))),0)), "")),INDEX(AR$2:AR{last_row-1}, MATCH(A{last_row}, A$2:A{last_row-1}, 0)))'
+        row[44] = f'=IFNA(INDEX(lab_data!N:N, MATCH(1, (lab_data!A:A = B{last_row}) * (lab_data!E:E = MAX(FILTER(lab_data!E:E, (lab_data!A:A = B{last_row}) * (lab_data!E:E <= F{last_row}) * (lab_data!E:E >= F{last_row} - 30) * (lab_data!N:N <> "")))) * (lab_data!N:N <> ""), 0)), "")'
+        row[45] = f'=IF(OR(AR{last_row}="",AU{last_row}=""),"",IF(AU{last_row}=0,0,AU{last_row}/DATEVALUE(INDEX(lab_data!$E:$E,MATCH(1,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E=MAX(FILTER(lab_data!$E:$E,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})*(lab_data!N:N<>""))))*(lab_data!N:N<>""),0))-XLOOKUP(AR{last_row},FILTER(lab_data!N:N,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})),FILTER(lab_data!$E:$E,(lab_data!$A:$A=$B{last_row})*(lab_data!$E:$E<=$F{last_row})),"Not found"))))'
+        row[46] = f'=IF(AS{last_row}="", "", AS{last_row} - AR{last_row})'
 
+        
         # nephrotoxins藥物使用
-        row[48] = int(data[9])
-        row[49] = int(data[10])
-        row[50] = int(data[11])
-        row[51] = int(data[12])
-        row[52] = int(data[13])
-        row[53] = int(data[14])
-        row[54] = int(data[15])
-        row[55] = int(data[16])
-        row[56] = int(data[17])
-        row[57] = f'=SUM(AW{last_row}:BE{last_row})'
+        row[47] = int(data[9])
+        row[48] = int(data[10])
+        row[49] = int(data[11])
+        row[50] = int(data[12])
+        row[51] = int(data[13])
+        row[52] = int(data[14])
+        row[53] = int(data[15])
+        row[54] = int(data[16])
+        row[55] = int(data[17])
+        row[56] = f'=SUM(AV{last_row}:BD{last_row})'
         
         # post SCr和eGFR查找
-        row[58] = f'=IFNA(IF(MAX(FILTER(lab_data!H:H, (lab_data!A:A = B{last_row}) * (lab_data!E:E > F{last_row}) * (lab_data!E:E <= F{last_row} + 89)))=0, "", MAX(FILTER(lab_data!H:H, (lab_data!A:A = B{last_row}) * (lab_data!E:E > F{last_row}) * (lab_data!E:E <= F{last_row} + 89)))), "")'
-        row[59] = f'=IF(AZ{last_row}="","",TO_DATE(XLOOKUP(AZ{last_row}, FILTER(lab_data!H:H, (lab_data!A:A = B{last_row}) * (lab_data!E:E > F{last_row}) * (lab_data!E:E <= F{last_row} + 89)), FILTER(lab_data!E:E, (lab_data!A:A = B{last_row}) * (lab_data!E:E > F{last_row}) * (lab_data!E:E <= F{last_row} + 89)), "Not found")))'
-        row[60] = f'=IF(AW{last_row}="", "", IF(D{last_row}=0, IF(AW{last_row}<=0.7, 141*((AW{last_row}/0.7)^-0.329)*0.993^E{last_row}*1.018, 141*((AW{last_row}/0.7)^-1.209)*0.993^E{last_row}*1.018), IF(AW{last_row}<=0.9, 141*((AW{last_row}/0.9)^-0.411)*0.993^E{last_row}, 141*((AW{last_row}/0.9)^-1.209)*0.993^E{last_row})))'
-        row[61] = f'=IFNA(IF(MAX(FILTER(lab_data!H:H, (lab_data!A:A = B{last_row}) * (lab_data!E:E > F{last_row}) * (lab_data!E:E <= F{last_row} + 14)))=0, "", MAX(FILTER(lab_data!H:H, (lab_data!A:A = B{last_row}) * (lab_data!E:E > F{last_row}) * (lab_data!E:E <= F{last_row} + 14)))), "")'
-        row[62] = f'=IF(AZ{last_row}="","",TO_DATE(XLOOKUP(AZ{last_row}, FILTER(lab_data!H:H, (lab_data!A:A = B{last_row}) * (lab_data!E:E > F{last_row}) * (lab_data!E:E <= F{last_row} + 14)), FILTER(lab_data!E:E, (lab_data!A:A = B{last_row}) * (lab_data!E:E > F{last_row}) * (lab_data!E:E <= F{last_row} + 14)), "Not found")))'
-        row[63] = f'=IF(AZ{last_row}="", "", IF(D{last_row}=0, IF(AZ{last_row}<=0.7, 141*((AZ{last_row}/0.7)^-0.329)*0.993^E{last_row}*1.018, 141*((AZ{last_row}/0.7)^-1.209)*0.993^E{last_row}*1.018), IF(AZ{last_row}<=0.9, 141*((AZ{last_row}/0.9)^-0.411)*0.993^E{last_row}, 141*((AZ{last_row}/0.9)^-1.209)*0.993^E{last_row})))'
+        row[57] = f'=IFNA(IF(MAX(FILTER(lab_data!H:H, (lab_data!A:A = B{last_row}) * (lab_data!E:E > F{last_row}) * (lab_data!E:E <= F{last_row} + 89)))=0, "", MAX(FILTER(lab_data!H:H, (lab_data!A:A = B{last_row}) * (lab_data!E:E > F{last_row}) * (lab_data!E:E <= F{last_row} + 89)))), "")'
+        row[58] = f'=IF(AY{last_row}="","",TO_DATE(XLOOKUP(AY{last_row}, FILTER(lab_data!H:H, (lab_data!A:A = B{last_row}) * (lab_data!E:E > F{last_row}) * (lab_data!E:E <= F{last_row} + 89)), FILTER(lab_data!E:E, (lab_data!A:A = B{last_row}) * (lab_data!E:E > F{last_row}) * (lab_data!E:E <= F{last_row} + 89)), "Not found")))'
+        row[59] = f'=IF(AV{last_row}="", "", IF(D{last_row}=0, IF(AV{last_row}<=0.7, 141*((AV{last_row}/0.7)^-0.329)*0.993^I{last_row}*1.018, 141*((AV{last_row}/0.7)^-1.209)*0.993^I{last_row}*1.018), IF(AV{last_row}<=0.9, 141*((AV{last_row}/0.9)^-0.411)*0.993^I{last_row}, 141*((AV{last_row}/0.9)^-1.209)*0.993^I{last_row})))'
+        row[60] = f'=IFNA(IF(MAX(FILTER(lab_data!H:H, (lab_data!A:A = B{last_row}) * (lab_data!E:E > F{last_row}) * (lab_data!E:E <= F{last_row} + 14)))=0, "", MAX(FILTER(lab_data!H:H, (lab_data!A:A = B{last_row}) * (lab_data!E:E > F{last_row}) * (lab_data!E:E <= F{last_row} + 14)))), "")'
+        row[61] = f'=IF(AY{last_row}="","",TO_DATE(XLOOKUP(AY{last_row}, FILTER(lab_data!H:H, (lab_data!A:A = B{last_row}) * (lab_data!E:E > F{last_row}) * (lab_data!E:E <= F{last_row} + 14)), FILTER(lab_data!E:E, (lab_data!A:A = B{last_row}) * (lab_data!E:E > F{last_row}) * (lab_data!E:E <= F{last_row} + 14)), "Not found")))'
+        row[62] = f'=IF(AY{last_row}="", "", IF(D{last_row}=0, IF(AY{last_row}<=0.7, 141*((AY{last_row}/0.7)^-0.329)*0.993^I{last_row}*1.018, 141*((AY{last_row}/0.7)^-1.209)*0.993^I{last_row}*1.018), IF(AY{last_row}<=0.9, 141*((AY{last_row}/0.9)^-0.411)*0.993^I{last_row}, 141*((AY{last_row}/0.9)^-1.209)*0.993^I{last_row})))'
         
         # AKI, AKD判定
-        row[65] = f'=IF(AZ{last_row}="", 0, IF(D{last_row}=1,IF(R{last_row}>=1.3,IF(OR(AZ{last_row}/Q{last_row}>=1.5, AZ{last_row}/R{last_row}>=1.5), 1, 0),IF(OR(AZ{last_row}/Q{last_row}>=1.5, AZ{last_row}/R{last_row}>=1.5, AZ{last_row}/1.3>=1.5), 1, 0)),IF(R{last_row}>=1.1,IF(OR(AZ{last_row}/Q{last_row}>=1.5, AZ{last_row}/R{last_row}>=1.5), 1, 0),IF(OR(AZ{last_row}/Q{last_row}>=1.5, AZ{last_row}/R{last_row}>=1.5, AZ{last_row}/1.1>=1.5), 1, 0))))'
-        row[66] = f'=IF(AW{last_row}="", 0, IF(V{last_row}<60, IF(OR(AW{last_row}/R{last_row}>=1.5,AW{last_row}/Q{last_row}>=1.5, AY{last_row}/V{last_row}<0.65,AY{last_row}/U{last_row}<0.65, BD{last_row}=1), 1, 0), IF(OR(AW{last_row}/R{last_row}>=1.5,AW{last_row}/Q{last_row}>=1.5, AY{last_row}/V{last_row}<0.65,AY{last_row}/U{last_row}<0.65, BD{last_row}=1, AY{last_row}<60), 1, 0)))'
-
+        row[64] = f'=IF(AY{last_row}="", 0, IF(D{last_row}=1,IF(Q{last_row}>=1.3,IF(OR(AY{last_row}/P{last_row}>=1.5, AY{last_row}/Q{last_row}>=1.5), 1, 0),IF(OR(AY{last_row}/P{last_row}>=1.5, AY{last_row}/Q{last_row}>=1.5, AY{last_row}/1.3>=1.5), 1, 0)),IF(Q{last_row}>=1.1,IF(OR(AY{last_row}/P{last_row}>=1.5, AY{last_row}/Q{last_row}>=1.5), 1, 0),IF(OR(AY{last_row}/P{last_row}>=1.5, AY{last_row}/Q{last_row}>=1.5, AY{last_row}/1.1>=1.5), 1, 0))))'
+        row[65] = f'=IF(AV{last_row}="", 0, IF(U{last_row}<60, IF(OR(AV{last_row}/Q{last_row}>=1.5,AV{last_row}/P{last_row}>=1.5, AX{last_row}/U{last_row}<0.65,AX{last_row}/T{last_row}<0.65, BC{last_row}=1), 1, 0), IF(OR(AV{last_row}/Q{last_row}>=1.5,AV{last_row}/P{last_row}>=1.5, AX{last_row}/U{last_row}<0.65,AX{last_row}/T{last_row}<0.65, BC{last_row}=1, AX{last_row}<60), 1, 0)))'
         
         # AKI_history判定
         # 取得目前病人 ID 和給藥日期
@@ -413,13 +413,13 @@ def save_to_gsheet(data, sheet_name):
         checkbox_checked = data[8]
         has_aki_history = False
         for r in reversed(all_rows[1:]):  # 從最新資料往回找
-            if r[1] == current_id and r[5] < current_date and r[65] == "1":  # 注意：從 Google Sheet 抓下來是字串
+            if r[1] == current_id and r[5] < current_date and r[64] == "1":  # 注意：從 Google Sheet 抓下來是字串
                 has_aki_history = True
                 break
         if data[8] or has_aki_history : 
-            row[64] = 1
+            row[63] = 1
         else :
-            row[64] = 0  # UI 有勾 or 過去有 AKI 就是 1
+            row[63] = 0  # UI 有勾 or 過去有 AKI 就是 1
         
         return row
 
