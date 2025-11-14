@@ -328,12 +328,12 @@ def save_to_gsheet(data, sheet_name):
         row = ["" for _ in range(67)]  
         row[1], row[3], row[2], row[4], row[5] = data[0], data[1], data[2], data[3], data[4]
     
-        if data[7] != 0:
+        if data[6] != 0:
             row[6], row[7] = data[5], 0
         else:
             row[6], row[7] = 0, data[5]
     
-        row[10], row[13] = data[7], data[8]
+        row[10], row[13] = data[6], data[7]
         
         # 抓之前的資料
         all_rows = sheet.get_all_values() 
@@ -342,7 +342,7 @@ def save_to_gsheet(data, sheet_name):
         row[0] = f'=IF(ROW()=2, 1, IF(COUNTIF(B$2:B{last_row-1}, B{last_row}) = 0, MAX(A$2:A{last_row-1}) + 1, IF(OR(H{last_row}<INDEX(H$2:H{last_row-1}, MAX(IF($B$2:B{last_row-1}=B{last_row}, ROW($B$2:B{last_row-1})-1, 0))),G{last_row}<INDEX(G$2:G{last_row-1}, MAX(IF($B$2:B{last_row-1}=B{last_row}, ROW($B$2:B{last_row-1})-1, 0))),F{last_row} - INDEX(F$2:F{last_row-1}, MAX(IF($B$2:B{last_row-1} = B{last_row}, ROW($B$2:B{last_row-1}) - 1, 0))) > 42), MAX(A$2:A{last_row-1}) + 1, INDEX(A$2:A{last_row-1}, MAX(IF(B$2:B{last_row-1}=B{last_row}, ROW($B$2:B{last_row-1})-1, 0))))))'
     
         row[8] = f'=IF(COUNTIF(A$2:A{last_row}, A{last_row}) = 1, 0, (F{last_row} - INDEX(F$2:F{last_row}, MATCH(A{last_row}, A$2:A{last_row}, 0)))/7)'
-        row[9] = data[6]
+        #row[9] = data[6]
         
         row[11] = f'=SUMIF(A$2:A{last_row}, A{last_row}, K$2:K{last_row})'
         row[12] = f'=IF(OR(G{last_row}=0, L{last_row}=0), 0, L{last_row} / G{last_row})'
@@ -382,15 +382,15 @@ def save_to_gsheet(data, sheet_name):
         row[47] = f'=IF(AT{last_row}="", "", AT{last_row} - AS{last_row})'
 
         # nephrotoxins藥物使用
-        row[48] = int(data[10])
-        row[49] = int(data[11])
-        row[50] = int(data[12])
-        row[51] = int(data[13])
-        row[52] = int(data[14])
-        row[53] = int(data[15])
-        row[54] = int(data[16])
-        row[55] = int(data[17])
-        row[56] = int(data[18])
+        row[48] = int(data[9])
+        row[49] = int(data[10])
+        row[50] = int(data[11])
+        row[51] = int(data[12])
+        row[52] = int(data[13])
+        row[53] = int(data[14])
+        row[54] = int(data[15])
+        row[55] = int(data[16])
+        row[56] = int(data[17])
         row[57] = f'=SUM(AW{last_row}:BE{last_row})'
         
         # post SCr和eGFR查找
@@ -410,13 +410,13 @@ def save_to_gsheet(data, sheet_name):
         # 取得目前病人 ID 和給藥日期
         current_id = data[0]
         current_date = data[4]
-        checkbox_checked = data[9]
+        checkbox_checked = data[8]
         has_aki_history = False
         for r in reversed(all_rows[1:]):  # 從最新資料往回找
             if r[1] == current_id and r[5] < current_date and r[65] == "1":  # 注意：從 Google Sheet 抓下來是字串
                 has_aki_history = True
                 break
-        if data[9] or has_aki_history : 
+        if data[8] or has_aki_history : 
             row[64] = 1
         else :
             row[64] = 0  # UI 有勾 or 過去有 AKI 就是 1
@@ -1021,7 +1021,7 @@ if mode == "Input mode":
         cycle_no = st.number_input("Cycle Number", min_value=1)
         cis_dose = st.number_input("Cisplatin Dose (mg)", min_value=0.0, format="%.1f")
         carb_dose = st.number_input("Carboplatin Dose (mg)", min_value=0.0, format="%.1f")
-        dose_percentage = st.number_input("Dose percentage (%)", min_value=0, max_value=100)
+        #dose_percentage = st.number_input("Dose percentage (%)", min_value=0, max_value=100)
     
     with col3:
         st.markdown("**Nephrotoxin Medications**")
@@ -1054,7 +1054,7 @@ if mode == "Input mode":
     
         st.success("✅ Data submitted successfully!")
         # 👉 顯示剛剛輸入的資料
-        chemo_df = pd.DataFrame([chemo_data_list], columns=['Number','Gender','Weight', 'Age','Date','Cycle','Dose percentage(%)','Cisplatin dose','Carboplatin dose','AKI history',
+        chemo_df = pd.DataFrame([chemo_data_list], columns=['Number','Gender','Weight', 'Age','Date','Cycle','Cisplatin dose','Carboplatin dose','AKI history',
                                                             'acei_arb','acetaminophen','diuretics','h2_blocker','nsaids','beta_lactam','ppi','contrast','other_nephrotoxin'])
         st.subheader("🧾 Submitted Data")
         st.dataframe(chemo_df)
