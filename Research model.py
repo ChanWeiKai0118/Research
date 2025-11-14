@@ -1041,7 +1041,7 @@ if mode == "Input mode":
         number = str(number).zfill(8)  # 強制補滿8位數
         chemo_data_list = [
             number, gender_value, weight, age, 
-            treatment_date_str, cycle_no, dose_percentage, cis_dose, carb_dose, aki_history ,
+            treatment_date_str, cycle_no, cis_dose, carb_dose, aki_history ,
             acei_arb, acetaminophen, diuretics, h2_blocker, nsaids, beta_lactam, ppi, contrast_media, others
         ]
     
